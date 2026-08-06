@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Rahlah — Captain</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F2ECDC; --ink:#1C2620; --ink-soft:#5B6259; --panel:#FFFDF6;
+    --brand:#0F4C3A; --brand-deep:#0A362A; --gold:#C9992F;
+    --men:#2E3B58; --women:#A6486A; --line:#DFD5B8; --danger:#B0402F; --radius:18px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;display:flex;justify-content:center;min-height:100vh;-webkit-font-smoothing:antialiased;}
+  .phone{width:100%;max-width:420px;min-height:100vh;background:var(--panel);position:relative;display:flex;flex-direction:column;box-shadow:0 0 60px rgba(15,76,58,0.08);}
+  header.top{padding:22px 22px 16px;background:var(--brand-deep);color:#fff;border-radius:0 0 26px 26px;border-bottom:3px solid var(--gold);position:relative;}
+  .conn-dot{width:8px;height:8px;border-radius:50%;background:#E5B25A;position:absolute;top:14px;right:14px;}
+  .conn-dot.live{background:#7FD69A;}
+  .brand-row{display:flex;align-items:center;justify-content:space-between;}
+  .brand{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px;}
+  .brand small{display:block;font-family:'Inter';font-weight:500;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;opacity:0.65;margin-top:2px;}
+  .status-toggle{display:flex;align-items:center;gap:8px;}
+  .status-toggle .dot{width:9px;height:9px;border-radius:50%;background:#6E7A6F;}
+  .status-toggle.online .dot{background:var(--gold);animation:pulse 1.4s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+  .status-toggle span{font-size:12px;opacity:0.85;}
+  .earnings-strip{margin-top:16px;display:flex;gap:10px;}
+  .es-box{flex:1;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:10px 12px;}
+  .es-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;opacity:0.6;}
+  .es-value{font-family:'IBM Plex Mono';font-weight:600;font-size:16px;margin-top:3px;}
+
+  main{flex:1;padding:20px 20px 30px;overflow-y:auto;}
+  .section-title{font-family:'Space Grotesk';font-weight:600;font-size:15px;margin:6px 0 12px;color:var(--brand-deep);}
+  .section-note{font-size:13px;color:var(--ink-soft);margin-top:-6px;margin-bottom:16px;}
+  .field{margin-bottom:14px;}
+  .field label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--ink-soft);display:block;margin-bottom:6px;}
+  .field input{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;font-family:'Inter';font-size:14px;background:#fff;}
+  .profile-row{background:#fff;border:1.5px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;}
+  .profile-name{font-family:'Space Grotesk';font-weight:600;font-size:14px;}
+  .profile-meta{font-size:11.5px;color:var(--ink-soft);margin-top:2px;}
+  .logout-link{font-size:12px;color:var(--ink-soft);background:none;border:none;cursor:pointer;text-decoration:underline;}
+  .notify-row{background:#fff;border:1.5px solid var(--line);border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:16px 0;}
+  .notify-title{font-family:'Space Grotesk';font-weight:600;font-size:13px;}
+  .notify-sub{font-size:11px;color:var(--ink-soft);margin-top:3px;line-height:1.4;}
+  .notify-toggle{background:var(--bg);border:1.5px solid var(--line);color:var(--brand-deep);border-radius:10px;padding:8px 14px;font-family:'Space Grotesk';font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+  .notify-toggle.on{background:var(--gold);border-color:var(--gold);}
+  .error-box{background:#FBE7E2;border:1px solid #E3A392;color:#8A3420;font-size:13px;border-radius:12px;padding:12px 14px;margin-bottom:14px;}
+
+  .option-card{background:#fff;border:1.5px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:12px;display:flex;align-items:center;gap:14px;cursor:pointer;}
+  .option-card.selected{border-color:var(--brand);background:#F5FAF7;}
+  .v-icon{width:52px;height:52px;border-radius:14px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+  .v-info{flex:1;}
+  .v-name{font-family:'Space Grotesk';font-weight:600;font-size:15px;}
+  .v-seats{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+  .v-price{font-family:'IBM Plex Mono';font-weight:500;font-size:14px;color:var(--brand-deep);text-align:right;}
+  .v-price span{display:block;font-size:9px;color:var(--ink-soft);font-family:'Inter';text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;}
+
+  .dir-toggle{display:flex;gap:10px;margin-bottom:18px;}
+  .dir-btn{flex:1;border:1.5px solid var(--line);background:#fff;border-radius:14px;padding:14px 10px;text-align:center;cursor:pointer;font-family:'Space Grotesk';font-weight:600;font-size:13px;}
+  .dir-btn.active{border-color:var(--brand);background:#F5FAF7;color:var(--brand-deep);}
+
+  .cta{width:100%;background:var(--brand);color:#fff;border:none;border-radius:14px;padding:16px;font-family:'Space Grotesk';font-weight:600;font-size:15px;cursor:pointer;margin-top:6px;}
+  .cta:disabled{background:#C9C4B2;cursor:not-allowed;}
+  .cta.gold{background:var(--gold);color:var(--brand-deep);}
+  .cta.ghost{background:transparent;color:var(--brand-deep);border:1.5px solid var(--line);}
+  .switch-link{text-align:center;font-size:13px;color:var(--ink-soft);margin-top:14px;}
+  .switch-link a{color:var(--brand-deep);font-weight:600;cursor:pointer;text-decoration:underline;}
+
+  .car-diagram{background:#fff;border:1.5px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:16px;}
+  .cd-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px;}
+  .cd-title{font-family:'Space Grotesk';font-weight:600;font-size:14px;}
+  .cd-sub{font-size:11px;color:var(--ink-soft);font-family:'IBM Plex Mono';}
+  .driver-row{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px dashed var(--line);flex-wrap:wrap;}
+  .driver-unit{display:flex;flex-direction:column;align-items:center;gap:6px;}
+  .dnote{font-size:9px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:1px;}
+  .seat{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:16px;border:2px dashed #D3CBAF;background:#FBF8EE;color:#B4AC8F;transition:all .25s;}
+  .seat.men{background:var(--men);border:2px solid var(--men);color:#fff;}
+  .seat.women{background:var(--women);border:2px solid var(--women);color:#fff;}
+  .seat.private{background:var(--gold);border:2px solid var(--gold);color:var(--brand-deep);}
+  .seat-row{display:flex;justify-content:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+  .row-tag{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--ink-soft);text-align:center;margin-bottom:6px;}
+  .progress-track{height:6px;background:var(--bg);border-radius:6px;overflow:hidden;margin-top:14px;}
+  .progress-fill{height:100%;background:var(--gold);border-radius:6px;transition:width .3s;}
+  .status-line{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-soft);margin-bottom:16px;}
+  .status-line .dot{width:8px;height:8px;border-radius:50%;background:var(--gold);animation:pulse 1.4s infinite;}
+  .private-badge{display:inline-block;background:var(--gold);color:var(--brand-deep);font-family:'Space Grotesk';font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;padding:4px 9px;border-radius:8px;margin-left:8px;}
+
+  .fare-box{background:#fff;border:1.5px solid var(--line);border-radius:var(--radius);padding:18px;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+  .fare-box .fl{font-size:12px;color:var(--ink-soft);}
+  .fare-box .fv{font-family:'IBM Plex Mono';font-weight:600;font-size:22px;color:var(--brand-deep);}
+
+  .screen{display:none;}
+  .screen.active{display:block;animation:fadein .25s;}
+  @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  .history-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);font-size:13px;}
+  .history-row:last-child{border-bottom:none;}
+  .hr-meta{color:var(--ink-soft);font-size:11px;margin-top:2px;}
+  .hr-fare{font-family:'IBM Plex Mono';font-weight:600;color:var(--brand-deep);}
+  .nav-back{background:none;border:none;color:var(--ink-soft);font-size:13px;margin-bottom:14px;cursor:pointer;display:flex;align-items:center;gap:4px;padding:0;}
+</style>
+</head>
+<body>
+<div class="phone">
+
+  <header class="top">
+    <div class="conn-dot" id="connDot"></div>
+    <div class="brand-row">
+      <div class="brand">Rahlah <small>Captain</small></div>
+      <div class="status-toggle" id="statusToggle"><span class="dot"></span><span id="statusText">Offline</span></div>
+    </div>
+    <div class="earnings-strip">
+      <div class="es-box"><div class="es-label">Total earned</div><div class="es-value" id="todayEarnings">0 SAR</div></div>
+      <div class="es-box"><div class="es-label">Trips</div><div class="es-value" id="todayTrips">0</div></div>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- AUTH -->
+    <section class="screen" id="screen-auth">
+      <div class="section-title" id="authTitle">Log in</div>
+      <div id="authError"></div>
+      <div class="field" id="fieldName" style="display:none;"><label>Your name</label><input id="regName" placeholder="e.g. Mohammed A." /></div>
+      <div class="field"><label>Phone number</label><input id="authPhone" placeholder="05xxxxxxxx" /></div>
+      <div class="field" id="fieldPlate" style="display:none;"><label>Vehicle plate</label><input id="regPlate" placeholder="e.g. 4211 KLM" /></div>
+      <div class="field"><label>Password</label><input id="authPassword" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter') submitAuth()" /></div>
+      <button class="cta gold" id="authSubmitBtn" onclick="submitAuth()">Log in</button>
+      <div class="switch-link" id="authSwitch">New here? <a onclick="toggleAuthMode()">Create a captain account</a></div>
+    </section>
+
+    <!-- SETUP (choose vehicle/direction, go online) -->
+    <section class="screen" id="screen-setup">
+      <div class="profile-row">
+        <div><div class="profile-name" id="profName">—</div><div class="profile-meta" id="profMeta">—</div></div>
+        <button class="logout-link" onclick="logout()">Log out</button>
+      </div>
+      <div class="section-title">Vehicle type</div>
+      <div id="vehicleList"></div>
+      <div class="section-title">Direction you're driving</div>
+      <div class="dir-toggle">
+        <div class="dir-btn active" id="dirA" onclick="setDirection('A_TO_B')">A → B</div>
+        <div class="dir-btn" id="dirB" onclick="setDirection('B_TO_A')">B → A</div>
+      </div>
+      <div class="notify-row" id="notifyRow">
+        <div><div class="notify-title">🔔 Notify me when off duty</div><div class="notify-sub">Get a push alert if a full car or booking needs a captain while you're away.</div></div>
+        <button class="notify-toggle" id="notifyToggle" onclick="toggleNotifications()">Enable</button>
+      </div>
+      <button class="cta gold" id="goOnlineBtn" disabled onclick="goOnline()">Go online</button>
+    </section>
+
+    <section class="screen" id="screen-idle">
+      <button class="nav-back" onclick="goOffline()">← Go offline</button>
+      <div class="status-line"><span class="dot"></span><span>You're online — waiting for a car</span></div>
+      <div class="car-diagram" style="text-align:center;padding:34px 20px;">
+        <div style="font-size:32px;margin-bottom:10px;">🕐</div>
+        <div class="cd-title" style="margin-bottom:8px;">No car needs you yet</div>
+        <p style="font-size:13px;color:var(--ink-soft);line-height:1.5;margin:0;">
+          You'll only be sent to the pickup zone once a car is completely full, a customer
+          books the whole car, or you accept a partial-car offer below.
+        </p>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-offer">
+      <div class="status-line"><span class="dot"></span><span>A customer is asking if you'll take a partial car</span></div>
+      <div class="car-diagram">
+        <div class="cd-head">
+          <div class="cd-title" id="offerTitle">Sedan</div>
+          <div class="cd-sub" id="offerRoute">A → B</div>
+        </div>
+        <div id="offerSeatMap"></div>
+      </div>
+      <p style="font-size:13px;color:var(--ink-soft);margin-bottom:16px;" id="offerSummary">
+        2 passengers waiting — the rest of the seats would ride empty.
+      </p>
+      <button class="cta gold" onclick="respondOffer('accept')">Accept and go pick them up</button>
+      <button class="cta ghost" onclick="respondOffer('decline')">Not this time — keep waiting for full</button>
+    </section>
+
+    <section class="screen" id="screen-forming">
+      <button class="nav-back" onclick="goOffline()">← Go offline</button>
+      <div class="status-line"><span class="dot"></span><span id="formingStatus">Waiting for passengers…</span></div>
+      <div class="car-diagram">
+        <div class="cd-head">
+          <div class="cd-title" id="carTitle">Sedan <span class="private-badge" id="privateBadge" style="display:none;">Private</span></div>
+          <div class="cd-sub" id="carRoute">A → B</div>
+        </div>
+        <div id="seatMap"></div>
+        <div class="progress-track"><div class="progress-fill" id="fillBar" style="width:0%"></div></div>
+      </div>
+      <button class="cta ghost" id="startEarlyBtn" onclick="startTrip()">Start trip now (partial car)</button>
+      <button class="cta" id="startFullBtn" disabled onclick="startTrip()">Start trip — car full</button>
+    </section>
+
+    <section class="screen" id="screen-trip">
+      <div class="section-title">Trip in progress</div>
+      <div class="car-diagram">
+        <div class="cd-head"><div class="cd-title" id="tripCarTitle">Sedan</div><div class="cd-sub" id="tripCarRoute">A → B</div></div>
+        <div id="tripSeatMap"></div>
+      </div>
+      <div class="fare-box"><div><div class="fl">Fare to collect this trip</div></div><div class="fv" id="tripFare">4 SAR</div></div>
+      <button class="cta" onclick="completeTrip()">Mark trip complete</button>
+    </section>
+
+    <section class="screen" id="screen-done">
+      <div style="text-align:center;padding:20px 10px;">
+        <div style="font-size:40px;">✅</div>
+        <div class="section-title" style="margin-top:10px;">Trip closed out</div>
+      </div>
+      <div class="fare-box"><div><div class="fl">You earned this trip</div></div><div class="fv" id="doneFare">4 SAR</div></div>
+      <button class="cta" onclick="continueToNext()">Accept next car</button>
+      <button class="cta ghost" onclick="goOffline()">Go offline</button>
+      <div class="section-title" style="margin-top:26px;">Recent trips</div>
+      <div id="historyList"></div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+// ===== EDIT THIS BEFORE DEPLOYING AS ITS OWN STATIC SITE =====
+// Leave blank for local dev (falls back to http://localhost:3000) or if this
+// file is served by the same server as the API. If deployed separately, set
+// this to your backend's URL, e.g. 'https://rahlah-backend.onrender.com'.
+const CONFIGURED_API_BASE = '';
+// ===============================================================
+const API_BASE = CONFIGURED_API_BASE || (location.hostname === 'localhost' ? 'http://localhost:3000' : '');
+const WS_BASE = API_BASE ? API_BASE.replace(/^http/, 'ws') : `${location.protocol==='https:'?'wss:':'ws:'}//${location.host}`;
+
+const VEHICLE_ICONS = { sedan:'🚗', family:'🚙', minibus:'🚐' };
+const VEHICLE_ROWLABEL = { sedan:'Back row', family:'Row', minibus:'Row' };
+let VEHICLES = {};
+let authMode = 'login';
+let token = localStorage.getItem('rahlah_captain_token') || null;
+let state = {
+  vehicleType:null, direction:'A_TO_B', captain:null, car:null,
+  history:[], totalEarnings:0, notifyOn: localStorage.getItem('rahlah_notify_on')==='1',
+};
+
+function authHeaders(json){
+  const h = { 'Authorization': 'Bearer ' + token };
+  if (json) h['Content-Type'] = 'application/json';
+  return h;
+}
+
+let ws;
+function connectWS(){
+  ws = new WebSocket(`${WS_BASE}/ws`);
+  ws.onopen = () => document.getElementById('connDot').classList.add('live');
+  ws.onclose = () => { document.getElementById('connDot').classList.remove('live'); setTimeout(connectWS, 1500); };
+  ws.onmessage = (evt) => {
+    const msg = JSON.parse(evt.data);
+    if (msg.type !== 'car_update' || !token || !state.captain) return;
+    const car = msg.car;
+    if (!state.car && car.pendingOffer && car.pendingOffer.captainId === state.captain.id){ enterOffer(car); return; }
+    if (car.captainId === state.captain.id){
+      if (!state.car || document.getElementById('screen-idle').classList.contains('active') || document.getElementById('screen-offer').classList.contains('active')){
+        enterForming(car);
+      } else if (state.car && car.id === state.car.id && document.getElementById('screen-forming').classList.contains('active')){
+        state.car = car; renderSeatMap('seatMap', car); updateForming(car);
+      }
+    }
+  };
+}
+connectWS();
+setInterval(() => {
+  if (!token || !state.captain) return;
+  fetch(API_BASE + '/api/captain/me', { headers: authHeaders() }).then(r=>r.ok?r.json():null).then(data=>{
+    if (!data) return;
+    if (data.car && (!state.car || state.car.id !== data.car.id || document.getElementById('screen-forming').classList.contains('active'))){
+      if (!state.car || state.car.id !== data.car.id){ enterForming(data.car); }
+      else { state.car = data.car; renderSeatMap('seatMap', data.car); updateForming(data.car); }
+    } else if (!data.car && data.offer && !document.getElementById('screen-offer').classList.contains('active')){
+      enterOffer(data.offer);
+    }
+  }).catch(()=>{});
+}, 4000);
+
+fetch(API_BASE + '/api/vehicles').then(r=>r.json()).then(v=>{ VEHICLES = v; renderVehicleList(); }).catch(()=>{
+  document.getElementById('vehicleList').innerHTML = '<div style="font-size:13px;color:#8A3420;">Can\'t reach the server. Is it running?</div>';
+});
+
+function totalSeats(vtype){ const c=VEHICLES[vtype]; return c.frontSeats + c.rows*3; }
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+/* ---------- auth ---------- */
+function toggleAuthMode(){
+  authMode = authMode==='login' ? 'register' : 'login';
+  document.getElementById('authTitle').textContent = authMode==='login' ? 'Log in' : 'Create a captain account';
+  document.getElementById('authSubmitBtn').textContent = authMode==='login' ? 'Log in' : 'Create account';
+  document.getElementById('fieldName').style.display = authMode==='register' ? 'block' : 'none';
+  document.getElementById('fieldPlate').style.display = authMode==='register' ? 'block' : 'none';
+  document.getElementById('authSwitch').innerHTML = authMode==='login'
+    ? `New here? <a onclick="toggleAuthMode()">Create a captain account</a>`
+    : `Already have an account? <a onclick="toggleAuthMode()">Log in</a>`;
+  document.getElementById('authError').innerHTML = '';
+}
+async function submitAuth(){
+  const phone = document.getElementById('authPhone').value.trim();
+  const password = document.getElementById('authPassword').value;
+  document.getElementById('authError').innerHTML = '';
+  if (!phone || !password){ document.getElementById('authError').innerHTML = '<div class="error-box">Enter phone and password.</div>'; return; }
+  const body = authMode==='login' ? { phone, password } : { phone, password, name: document.getElementById('regName').value.trim(), plate: document.getElementById('regPlate').value.trim() };
+  if (authMode==='register' && (!body.name || !body.plate)){ document.getElementById('authError').innerHTML = '<div class="error-box">Name and plate are required.</div>'; return; }
+  try{
+    const res = await fetch(`${API_BASE}/api/captain/${authMode}`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    const data = await res.json();
+    if (!res.ok){ document.getElementById('authError').innerHTML = `<div class="error-box">${data.error}</div>`; return; }
+    token = data.token;
+    localStorage.setItem('rahlah_captain_token', token);
+    state.captain = data.captain;
+    afterAuth(data.car);
+  } catch(e){ document.getElementById('authError').innerHTML = '<div class="error-box">Couldn\'t reach the server.</div>'; }
+}
+function afterAuth(car){
+  updateProfileUI();
+  updateEarningsUI();
+  if (car){
+    if (car.status === 'in_trip') enterTripFromCar(car);
+    else enterForming(car);
+  } else {
+    document.getElementById('statusToggle').classList.toggle('online', state.captain.status==='online');
+    document.getElementById('statusText').textContent = state.captain.status==='online' ? 'Online' : 'Offline';
+    if (state.captain.status==='online') goTo('screen-idle'); else goTo('screen-setup');
+  }
+  if (state.notifyOn) setNotifyUI(true);
+}
+function logout(){
+  token = null; state.captain = null; state.car = null;
+  localStorage.removeItem('rahlah_captain_token');
+  goTo('screen-auth');
+}
+function updateProfileUI(){
+  document.getElementById('profName').textContent = state.captain.name;
+  document.getElementById('profMeta').textContent = state.captain.phone + ' · ' + state.captain.plate;
+}
+function updateEarningsUI(){
+  document.getElementById('todayEarnings').textContent = state.captain.earnings + ' SAR';
+  document.getElementById('todayTrips').textContent = state.captain.tripHistory.length;
+  state.history = state.captain.tripHistory;
+}
+
+/* ---------- push notifications ---------- */
+function urlBase64ToUint8Array(base64String){
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g,'+').replace(/_/g,'/');
+  const raw = atob(base64);
+  return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)));
+}
+async function toggleNotifications(){
+  if (state.notifyOn){
+    try{ await fetch(API_BASE + '/api/push/unsubscribe', { method:'POST', headers: authHeaders() }); } catch(e){}
+    localStorage.setItem('rahlah_notify_on', '0');
+    setNotifyUI(false);
+    return;
+  }
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)){ alert('Push notifications are not supported in this browser.'); return; }
+  try{
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted'){ alert("Notifications were not allowed — you can still use the app, you just won't get alerts while off duty."); return; }
+    const reg = await navigator.serviceWorker.register('/sw.js');
+    const { publicKey } = await fetch(API_BASE + '/api/push/vapid-public-key').then(r=>r.json());
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey: urlBase64ToUint8Array(publicKey) });
+    await fetch(API_BASE + '/api/push/subscribe', { method:'POST', headers: authHeaders(true), body: JSON.stringify({ subscription: sub }) });
+    localStorage.setItem('rahlah_notify_on', '1');
+    setNotifyUI(true);
+  } catch(e){ alert("Couldn't set up notifications: " + e.message); }
+}
+function setNotifyUI(on){
+  state.notifyOn = on;
+  const btn = document.getElementById('notifyToggle');
+  btn.textContent = on ? 'On ✓' : 'Enable';
+  btn.classList.toggle('on', on);
+}
+
+/* ---------- vehicle/direction/online ---------- */
+function renderVehicleList(){
+  const wrap = document.getElementById('vehicleList');
+  wrap.innerHTML='';
+  Object.entries(VEHICLES).forEach(([key,cfg])=>{
+    const div = document.createElement('div');
+    div.className = 'option-card' + (state.vehicleType===key ? ' selected':'');
+    div.onclick = ()=>{ state.vehicleType=key; renderVehicleList(); checkGoOnline(); };
+    div.innerHTML = `
+      <div class="v-icon">${VEHICLE_ICONS[key]}</div>
+      <div class="v-info">
+        <div class="v-name">${cfg.name}</div>
+        <div class="v-seats">${totalSeats(key)} seats · ${cfg.frontSeats} front (men) + ${cfg.rows} row${cfg.rows>1?'s':''} of 3</div>
+      </div>
+      <div class="v-price">${cfg.price} SAR/seat<span>or ${cfg.fullPrice} full car</span></div>
+    `;
+    wrap.appendChild(div);
+  });
+}
+function setDirection(d){
+  state.direction = d;
+  document.getElementById('dirA').classList.toggle('active', d==='A_TO_B');
+  document.getElementById('dirB').classList.toggle('active', d==='B_TO_A');
+}
+function checkGoOnline(){ document.getElementById('goOnlineBtn').disabled = !state.vehicleType; }
+
+async function goOnline(){
+  try{
+    const res = await fetch(API_BASE + '/api/captain/online', {
+      method:'POST', headers: authHeaders(true),
+      body: JSON.stringify({ vehicleType: state.vehicleType, direction: state.direction }),
+    });
+    const data = await res.json();
+    if (!res.ok){ alert(data.error || 'Could not go online.'); return; }
+    state.captain = data.captain;
+    updateEarningsUI();
+    document.getElementById('statusToggle').classList.add('online');
+    document.getElementById('statusText').textContent='Online';
+    if (data.car) enterForming(data.car); else goTo('screen-idle');
+  } catch(e){ alert("Couldn't reach the server."); }
+}
+
+async function goOffline(){
+  try{ await fetch(API_BASE + '/api/captain/offline', { method:'POST', headers: authHeaders() }); } catch(e){}
+  state.car = null;
+  document.getElementById('statusToggle').classList.remove('online');
+  document.getElementById('statusText').textContent='Offline';
+  goTo('screen-setup');
+}
+
+function enterOffer(car){
+  state.car = null;
+  state.offerCar = car;
+  document.getElementById('offerTitle').textContent = VEHICLES[car.vehicleType].name;
+  document.getElementById('offerRoute').textContent = car.direction==='A_TO_B' ? 'A → B' : 'B → A';
+  const filled = car.front.filter(s=>s!==null).length + car.rows.reduce((n,r)=>n+r.seats.filter(s=>s!==null).length,0);
+  const total = totalSeats(car.vehicleType);
+  document.getElementById('offerSummary').textContent = `${filled} of ${total} seats filled — the rest would ride empty if you accept now.`;
+  renderSeatMap('offerSeatMap', car);
+  goTo('screen-offer');
+}
+async function respondOffer(action){
+  if (!state.offerCar) return;
+  try{
+    const res = await fetch(`${API_BASE}/api/captain/offer/${state.offerCar.id}/${action}`, { method:'POST', headers: authHeaders() });
+    const data = await res.json();
+    if (!res.ok){ alert(data.error || 'Could not respond to offer.'); goTo('screen-idle'); return; }
+    state.offerCar = null;
+    if (action==='accept') enterForming(data.car); else goTo('screen-idle');
+  } catch(e){ alert("Couldn't reach the server."); }
+}
+
+function enterForming(car){
+  state.car = car;
+  goTo('screen-forming');
+  document.getElementById('carTitle').firstChild.textContent = VEHICLES[car.vehicleType].name + ' ';
+  document.getElementById('privateBadge').style.display = car.mode==='private' ? 'inline-block' : 'none';
+  document.getElementById('carRoute').textContent = car.direction==='A_TO_B' ? 'A → B' : 'B → A';
+  document.getElementById('startEarlyBtn').style.display = car.mode==='private' ? 'none' : 'block';
+  renderSeatMap('seatMap', car);
+  updateForming(car);
+}
+function enterTripFromCar(car){
+  state.car = car;
+  document.getElementById('tripCarTitle').textContent = VEHICLES[car.vehicleType].name + (car.mode==='private' ? ' · Private' : '');
+  document.getElementById('tripCarRoute').textContent = car.direction==='A_TO_B' ? 'A → B' : 'B → A';
+  renderSeatMap('tripSeatMap', car);
+  const filled = car.front.filter(s=>s!==null).length + car.rows.reduce((n,r)=>n+r.seats.filter(s=>s!==null).length,0);
+  const fare = car.mode==='private' ? VEHICLES[car.vehicleType].fullPrice : filled * VEHICLES[car.vehicleType].price;
+  document.getElementById('tripFare').textContent = fare + ' SAR';
+  goTo('screen-trip');
+}
+
+function renderSeatMap(elId, car){
+  const cfg = VEHICLES[car.vehicleType];
+  const rowLabel = VEHICLE_ROWLABEL[car.vehicleType];
+  const el = document.getElementById(elId);
+  let html = '<div class="driver-row">';
+  car.front.forEach(f=>{
+    const cls = f ? f : '';
+    const icon = f==='private' ? '★' : (f ? '♂' : '—');
+    html += `<div class="driver-unit"><div class="seat ${cls}">${icon}</div><div class="dnote">${cfg.frontSeats>1?'driver row':'driver'}</div></div>`;
+  });
+  html += '</div>';
+  car.rows.forEach((r, ri)=>{
+    const label = r.gender==='private' ? 'Private' : (r.gender ? (r.gender==='men'?'Men':'Women') : 'open');
+    html += `<div class="row-tag">${rowLabel}${cfg.rows>1?' '+(ri+1):''} · ${label}</div>`;
+    html += '<div class="seat-row">';
+    r.seats.forEach(s=>{
+      const icon = s==='private' ? '★' : (s ? (s==='men'?'♂':'♀') : '·');
+      html += `<div class="seat ${s?s:''}">${icon}</div>`;
+    });
+    html += '</div>';
+  });
+  el.innerHTML = html;
+}
+
+function updateForming(car){
+  const total = totalSeats(car.vehicleType);
+  const filled = car.front.filter(s=>s!==null).length + car.rows.reduce((n,r)=>n+r.seats.filter(s=>s!==null).length,0);
+  const left = total-filled;
+  document.getElementById('fillBar').style.width = Math.round((filled/total)*100)+'%';
+  document.getElementById('formingStatus').textContent = car.mode==='private'
+    ? 'Exclusive booking — car reserved for one group, ready to go!'
+    : (left===0 ? 'Car is full — ready to go!' : `${filled}/${total} seats filled · waiting for ${left} more`);
+  document.getElementById('startEarlyBtn').textContent = `Start trip now (${filled}/${total} filled)`;
+  document.getElementById('startFullBtn').disabled = left!==0;
+}
+
+async function startTrip(){
+  try{
+    const res = await fetch(API_BASE + '/api/captain/start-trip', { method:'POST', headers: authHeaders() });
+    const data = await res.json();
+    if (!res.ok){ alert(data.error||'Could not start trip.'); return; }
+    enterTripFromCar(data.car);
+  } catch(e){ alert("Couldn't reach the server."); }
+}
+
+async function completeTrip(){
+  try{
+    const res = await fetch(API_BASE + '/api/captain/complete-trip', { method:'POST', headers: authHeaders() });
+    const data = await res.json();
+    if (!res.ok){ alert(data.error||'Could not complete trip.'); return; }
+    state.captain = data.captain; state.car = data.car || null;
+    updateEarningsUI();
+    document.getElementById('doneFare').textContent = data.trip.fare + ' SAR';
+    renderHistory();
+    goTo('screen-done');
+  } catch(e){ alert("Couldn't reach the server."); }
+}
+
+function continueToNext(){ if (state.car) enterForming(state.car); else goTo('screen-idle'); }
+
+function renderHistory(){
+  const wrap = document.getElementById('historyList');
+  if (state.history.length===0){ wrap.innerHTML = '<div style="font-size:13px;color:var(--ink-soft);">No trips yet.</div>'; return; }
+  wrap.innerHTML = state.history.slice(0,20).map(h => `
+    <div class="history-row">
+      <div><div>${VEHICLES[h.vehicleType].name}${h.mode==='private'?' (private)':''} · ${h.direction==='A_TO_B'?'A → B':'B → A'}</div><div class="hr-meta">${h.seats} seat${h.seats===1?'':'s'} filled</div></div>
+      <div class="hr-fare">${h.fare} SAR</div>
+    </div>
+  `).join('');
+}
+
+/* ---------- init: resume session if we have a token ---------- */
+if (token){
+  fetch(API_BASE + '/api/captain/me', { headers: authHeaders() }).then(r=>r.ok?r.json():Promise.reject()).then(data=>{
+    state.captain = data.captain;
+    afterAuth(data.car || (data.offer ? null : null));
+    if (!data.car && data.offer) enterOffer(data.offer);
+  }).catch(()=>{ token = null; localStorage.removeItem('rahlah_captain_token'); goTo('screen-auth'); });
+} else {
+  goTo('screen-auth');
+}
+</script>
+</body>
+</html>
