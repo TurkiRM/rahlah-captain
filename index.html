@@ -336,14 +336,16 @@ function afterAuth(car){
   if (car){
     if (car.status === 'in_trip') enterTripFromCar(car);
     else enterForming(car);
+    startLocationSharing();
   } else {
     document.getElementById('statusToggle').classList.toggle('online', state.captain.status==='online');
     document.getElementById('statusText').textContent = state.captain.status==='online' ? 'Online' : 'Offline';
-    if (state.captain.status==='online') goTo('screen-idle'); else goTo('screen-setup');
+    if (state.captain.status==='online'){ goTo('screen-idle'); startLocationSharing(); } else goTo('screen-setup');
   }
   if (state.notifyOn) setNotifyUI(true);
 }
 function logout(){
+  stopLocationSharing();
   token = null; state.captain = null; state.car = null;
   localStorage.removeItem('rahlah_captain_token');
   goTo('screen-auth');
@@ -430,16 +432,48 @@ async function goOnline(){
     updateEarningsUI();
     document.getElementById('statusToggle').classList.add('online');
     document.getElementById('statusText').textContent='Online';
+    startLocationSharing();
     if (data.car) enterForming(data.car); else goTo('screen-idle');
   } catch(e){ alert("Couldn't reach the server."); }
 }
 
 async function goOffline(){
   try{ await fetch(API_BASE + '/api/captain/offline', { method:'POST', headers: authHeaders() }); } catch(e){}
+  stopLocationSharing();
   state.car = null;
   document.getElementById('statusToggle').classList.remove('online');
   document.getElementById('statusText').textContent='Offline';
   goTo('screen-setup');
+}
+
+/* ---------- live location sharing (GPS) ---------- */
+let geoWatchId = null;
+let latestPosition = null;
+let locationSendTimer = null;
+
+function startLocationSharing(){
+  if (!('geolocation' in navigator)) return; // no alert — location sharing is supplementary, not required to work
+  stopLocationSharing();
+  geoWatchId = navigator.geolocation.watchPosition(
+    (pos) => { latestPosition = { lat: pos.coords.latitude, lng: pos.coords.longitude }; },
+    (err) => { console.warn('Location error:', err.message); },
+    { enableHighAccuracy: true, maximumAge: 5000 }
+  );
+  // Send at most once every 5s even if the browser reports faster than that —
+  // seat/dispatch matching doesn't need sub-5-second precision, and this
+  // keeps the API call volume reasonable for a captain driving all day.
+  locationSendTimer = setInterval(() => {
+    if (!latestPosition || !token) return;
+    fetch(API_BASE + '/api/captain/location', {
+      method:'POST', headers: authHeaders(true),
+      body: JSON.stringify(latestPosition),
+    }).catch(()=>{});
+  }, 5000);
+}
+function stopLocationSharing(){
+  if (geoWatchId !== null){ navigator.geolocation.clearWatch(geoWatchId); geoWatchId = null; }
+  clearInterval(locationSendTimer); locationSendTimer = null;
+  latestPosition = null;
 }
 
 function enterOffer(car){
