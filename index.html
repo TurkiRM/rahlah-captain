@@ -47,6 +47,13 @@
   .notify-sub{font-size:11px;color:var(--ink-soft);margin-top:3px;line-height:1.4;}
   .notify-toggle{background:var(--bg);border:1.5px solid var(--line);color:var(--brand-deep);border-radius:10px;padding:8px 14px;font-family:'Space Grotesk';font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
   .notify-toggle.on{background:var(--gold);border-color:var(--gold);}
+  .doc-row{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px;}
+  .doc-row-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .doc-name{font-family:'Space Grotesk';font-weight:600;font-size:13px;}
+  .doc-status{font-size:11px;padding:3px 9px;border-radius:20px;font-family:'Space Grotesk';font-weight:600;}
+  .doc-status.missing{background:#FBE7E2;color:#8A3420;}
+  .doc-status.uploaded{background:#DCEEE1;color:#1B6B3A;}
+  .doc-row input[type=file]{width:100%;font-size:12px;}
   .error-box{background:#FBE7E2;border:1px solid #E3A392;color:#8A3420;font-size:13px;border-radius:12px;padding:12px 14px;margin-bottom:14px;}
 
   .option-card{background:#fff;border:1.5px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:12px;display:flex;align-items:center;gap:14px;cursor:pointer;}
@@ -130,6 +137,47 @@
       <div class="field"><label>Password</label><input id="authPassword" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter') submitAuth()" /></div>
       <button class="cta gold" id="authSubmitBtn" onclick="submitAuth()">Log in</button>
       <div class="switch-link" id="authSwitch">New here? <a onclick="toggleAuthMode()">Create a captain account</a></div>
+    </section>
+
+    <!-- DOCUMENTS (required before going online; also used to re-upload after rejection) -->
+    <section class="screen" id="screen-documents">
+      <div class="profile-row">
+        <div><div class="profile-name" id="docsProfName">—</div><div class="profile-meta">Document verification</div></div>
+        <button class="logout-link" onclick="logout()">Log out</button>
+      </div>
+      <div id="rejectionBanner" style="display:none;" class="error-box"></div>
+      <div class="section-title">Upload your documents</div>
+      <p class="section-note">All five are required before you can go online. A supervisor reviews them
+        before your account is activated — this usually doesn't take long.</p>
+      <div id="docFieldsWrap"></div>
+      <div id="docsError"></div>
+      <button class="cta gold" id="docsSubmitBtn" onclick="submitDocuments()">Save documents</button>
+    </section>
+
+    <!-- PENDING REVIEW -->
+    <section class="screen" id="screen-pending-review">
+      <button class="nav-back" onclick="logout()">← Log out</button>
+      <div class="car-diagram" style="text-align:center;padding:34px 20px;">
+        <div style="font-size:32px;margin-bottom:10px;">🕐</div>
+        <div class="cd-title" style="margin-bottom:8px;">Documents under review</div>
+        <p style="font-size:13px;color:var(--ink-soft);line-height:1.5;margin:0 0 16px;">
+          A supervisor is reviewing your documents. You'll be able to go online as soon as
+          your account is approved.
+        </p>
+        <button class="cta ghost" onclick="goTo('screen-documents'); renderDocFields();">Review my uploads</button>
+      </div>
+    </section>
+
+    <!-- SUSPENDED -->
+    <section class="screen" id="screen-suspended">
+      <button class="nav-back" onclick="logout()">← Log out</button>
+      <div class="car-diagram" style="text-align:center;padding:34px 20px;">
+        <div style="font-size:32px;margin-bottom:10px;">⛔</div>
+        <div class="cd-title" style="margin-bottom:8px;">Account suspended</div>
+        <p style="font-size:13px;color:var(--ink-soft);line-height:1.5;margin:0;">
+          Your account has been suspended. Contact support for help.
+        </p>
+      </div>
     </section>
 
     <!-- SETUP (choose vehicle/direction, go online) -->
@@ -333,6 +381,15 @@ async function submitAuth(){
 function afterAuth(car){
   updateProfileUI();
   updateEarningsUI();
+  const status = state.captain.accountStatus;
+  if (status === 'documents_needed' || status === 'rejected'){
+    goTo('screen-documents');
+    renderDocFields();
+    return;
+  }
+  if (status === 'pending_review'){ goTo('screen-pending-review'); return; }
+  if (status === 'suspended'){ goTo('screen-suspended'); return; }
+  // status === 'active'
   if (car){
     if (car.status === 'in_trip') enterTripFromCar(car);
     else enterForming(car);
@@ -343,6 +400,64 @@ function afterAuth(car){
     if (state.captain.status==='online'){ goTo('screen-idle'); startLocationSharing(); } else goTo('screen-setup');
   }
   if (state.notifyOn) setNotifyUI(true);
+}
+
+/* ---------- documents ---------- */
+const DOC_TYPES = [
+  { key:'license', label:"Driver's license" },
+  { key:'vehicleRegistration', label:'Vehicle registration' },
+  { key:'insurance', label:'Insurance' },
+  { key:'inspection', label:'Periodic inspection certificate' },
+  { key:'photo', label:'Photo of yourself' },
+];
+function renderDocFields(){
+  document.getElementById('docsProfName').textContent = state.captain.name;
+  const reason = state.captain.rejectionReason;
+  const banner = document.getElementById('rejectionBanner');
+  if (state.captain.accountStatus === 'rejected' && reason){
+    banner.style.display = 'block';
+    banner.textContent = `Not approved: ${reason} — please re-upload the affected document(s) below.`;
+  } else {
+    banner.style.display = 'none';
+  }
+  const wrap = document.getElementById('docFieldsWrap');
+  wrap.innerHTML = DOC_TYPES.map(d => {
+    const uploaded = !!(state.captain.documents && state.captain.documents[d.key]);
+    return `
+      <div class="doc-row">
+        <div class="doc-row-top">
+          <div class="doc-name">${d.label}</div>
+          <div class="doc-status ${uploaded?'uploaded':'missing'}">${uploaded?'Uploaded ✓':'Missing'}</div>
+        </div>
+        <input type="file" id="doc-${d.key}" accept="image/*,application/pdf" />
+      </div>`;
+  }).join('');
+}
+async function submitDocuments(){
+  const formData = new FormData();
+  let anySelected = false;
+  DOC_TYPES.forEach(d => {
+    const input = document.getElementById('doc-'+d.key);
+    if (input && input.files && input.files[0]){ formData.append(d.key, input.files[0]); anySelected = true; }
+  });
+  document.getElementById('docsError').innerHTML = '';
+  if (!anySelected){ document.getElementById('docsError').innerHTML = '<div class="error-box">Choose at least one file to upload.</div>'; return; }
+  document.getElementById('docsSubmitBtn').disabled = true;
+  document.getElementById('docsSubmitBtn').textContent = 'Uploading…';
+  try{
+    const res = await fetch(API_BASE + '/api/captain/documents', {
+      method:'POST', headers:{ 'Authorization': 'Bearer ' + token }, // no Content-Type — browser sets the multipart boundary
+      body: formData,
+    });
+    const data = await res.json();
+    if (!res.ok){ document.getElementById('docsError').innerHTML = `<div class="error-box">${data.error}</div>`; return; }
+    state.captain = data.captain;
+    afterAuth(null);
+  } catch(e){ document.getElementById('docsError').innerHTML = '<div class="error-box">Couldn\'t reach the server.</div>'; }
+  finally{
+    document.getElementById('docsSubmitBtn').disabled = false;
+    document.getElementById('docsSubmitBtn').textContent = 'Save documents';
+  }
 }
 function logout(){
   stopLocationSharing();
