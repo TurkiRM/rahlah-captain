@@ -3,80 +3,76 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Rahlah — Captain</title>
+<title>Rahlah — Customer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#F2ECDC; --ink:#1C2620; --ink-soft:#5B6259; --panel:#FFFDF6;
     --brand:#0F4C3A; --brand-deep:#0A362A; --gold:#C9992F;
-    --men:#2E3B58; --women:#A6486A; --line:#DFD5B8; --danger:#B0402F; --radius:18px;
+    --men:#2E3B58; --women:#A6486A; --line:#DFD5B8; --radius:18px;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;display:flex;justify-content:center;min-height:100vh;-webkit-font-smoothing:antialiased;}
   .phone{width:100%;max-width:420px;min-height:100vh;background:var(--panel);position:relative;display:flex;flex-direction:column;box-shadow:0 0 60px rgba(15,76,58,0.08);}
-  header.top{padding:22px 22px 16px;background:var(--brand-deep);color:#fff;border-radius:0 0 26px 26px;border-bottom:3px solid var(--gold);position:relative;}
+  header.top{padding:22px 22px 16px;background:var(--brand);color:#fff;border-radius:0 0 26px 26px;position:relative;}
+  .brand-row{display:flex;align-items:center;justify-content:space-between;}
+  .brand{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px;letter-spacing:0.2px;}
+  .brand small{display:block;font-family:'Inter';font-weight:500;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;opacity:0.65;margin-top:2px;}
+  .avatar{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;cursor:pointer;}
   .conn-dot{width:8px;height:8px;border-radius:50%;background:#E5B25A;position:absolute;top:14px;right:14px;}
   .conn-dot.live{background:#7FD69A;}
-  .brand-row{display:flex;align-items:center;justify-content:space-between;}
-  .brand{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:22px;}
-  .brand small{display:block;font-family:'Inter';font-weight:500;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;opacity:0.65;margin-top:2px;}
-  .status-toggle{display:flex;align-items:center;gap:8px;}
-  .status-toggle .dot{width:9px;height:9px;border-radius:50%;background:#6E7A6F;}
-  .status-toggle.online .dot{background:var(--gold);animation:pulse 1.4s infinite;}
-  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
-  .status-toggle span{font-size:12px;opacity:0.85;}
-  .earnings-strip{margin-top:16px;display:flex;gap:10px;}
-  .es-box{flex:1;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:10px 12px;}
-  .es-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;opacity:0.6;}
-  .es-value{font-family:'IBM Plex Mono';font-weight:600;font-size:16px;margin-top:3px;}
-
-  main{flex:1;padding:20px 20px 30px;overflow-y:auto;}
+  .route-pill{margin-top:18px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.18);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:10px;}
+  .route-pill .pt{flex:1;}
+  .route-pill .pt .label{font-size:10px;text-transform:uppercase;letter-spacing:1px;opacity:0.6;}
+  .route-pill .pt .name{font-family:'Space Grotesk';font-weight:600;font-size:14px;margin-top:2px;}
+  .swap-btn{background:var(--gold);border:none;width:32px;height:32px;border-radius:50%;color:var(--brand-deep);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  main{flex:1;padding:20px 20px 100px;overflow-y:auto;}
   .section-title{font-family:'Space Grotesk';font-weight:600;font-size:15px;margin:6px 0 12px;color:var(--brand-deep);}
   .section-note{font-size:13px;color:var(--ink-soft);margin-top:-6px;margin-bottom:16px;}
+  .error-box{background:#FBE7E2;border:1px solid #E3A392;color:#8A3420;font-size:13px;border-radius:12px;padding:12px 14px;margin-bottom:14px;}
   .field{margin-bottom:14px;}
   .field label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--ink-soft);display:block;margin-bottom:6px;}
   .field input{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;font-family:'Inter';font-size:14px;background:#fff;}
+  .switch-link{text-align:center;font-size:13px;color:var(--ink-soft);margin-top:14px;}
+  .switch-link a{color:var(--brand-deep);font-weight:600;cursor:pointer;text-decoration:underline;}
   .profile-row{background:#fff;border:1.5px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;}
   .profile-name{font-family:'Space Grotesk';font-weight:600;font-size:14px;}
   .profile-meta{font-size:11.5px;color:var(--ink-soft);margin-top:2px;}
   .logout-link{font-size:12px;color:var(--ink-soft);background:none;border:none;cursor:pointer;text-decoration:underline;}
-  .notify-row{background:#fff;border:1.5px solid var(--line);border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:16px 0;}
-  .notify-title{font-family:'Space Grotesk';font-weight:600;font-size:13px;}
-  .notify-sub{font-size:11px;color:var(--ink-soft);margin-top:3px;line-height:1.4;}
-  .notify-toggle{background:var(--bg);border:1.5px solid var(--line);color:var(--brand-deep);border-radius:10px;padding:8px 14px;font-family:'Space Grotesk';font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
-  .notify-toggle.on{background:var(--gold);border-color:var(--gold);}
-  .doc-row{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px;}
-  .doc-row-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
-  .doc-name{font-family:'Space Grotesk';font-weight:600;font-size:13px;}
-  .doc-status{font-size:11px;padding:3px 9px;border-radius:20px;font-family:'Space Grotesk';font-weight:600;}
-  .doc-status.missing{background:#FBE7E2;color:#8A3420;}
-  .doc-status.uploaded{background:#DCEEE1;color:#1B6B3A;}
-  .doc-row input[type=file]{width:100%;font-size:12px;}
-  .error-box{background:#FBE7E2;border:1px solid #E3A392;color:#8A3420;font-size:13px;border-radius:12px;padding:12px 14px;margin-bottom:14px;}
 
-  .option-card{background:#fff;border:1.5px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:12px;display:flex;align-items:center;gap:14px;cursor:pointer;}
-  .option-card.selected{border-color:var(--brand);background:#F5FAF7;}
+  .vehicle-card{background:#fff;border:1.5px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:12px;cursor:pointer;transition:border-color .15s, transform .15s;}
+  .vehicle-card:active{transform:scale(0.98);}
+  .vc-top{display:flex;align-items:center;gap:14px;}
   .v-icon{width:52px;height:52px;border-radius:14px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
   .v-info{flex:1;}
   .v-name{font-family:'Space Grotesk';font-weight:600;font-size:15px;}
   .v-seats{font-size:12px;color:var(--ink-soft);margin-top:2px;}
-  .v-price{font-family:'IBM Plex Mono';font-weight:500;font-size:14px;color:var(--brand-deep);text-align:right;}
-  .v-price span{display:block;font-size:9px;color:var(--ink-soft);font-family:'Inter';text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;}
+  .v-price{font-family:'IBM Plex Mono';font-weight:500;font-size:16px;color:var(--brand-deep);text-align:right;}
+  .v-price span{display:block;font-size:9px;color:var(--ink-soft);font-family:'Inter';text-transform:uppercase;letter-spacing:0.5px;}
+  .vc-full{margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);display:flex;justify-content:space-between;align-items:center;}
+  .vc-full .vcf-label{font-size:12px;color:var(--ink-soft);}
+  .vc-full-btn{background:none;border:1.5px solid var(--gold);color:#8A6A1F;border-radius:10px;padding:7px 12px;font-family:'Space Grotesk';font-weight:600;font-size:12px;cursor:pointer;white-space:nowrap;}
 
-  .dir-toggle{display:flex;gap:10px;margin-bottom:18px;}
-  .dir-btn{flex:1;border:1.5px solid var(--line);background:#fff;border-radius:14px;padding:14px 10px;text-align:center;cursor:pointer;font-family:'Space Grotesk';font-weight:600;font-size:13px;}
-  .dir-btn.active{border-color:var(--brand);background:#F5FAF7;color:var(--brand-deep);}
+  .stepper-card{background:#fff;border:1.5px solid var(--line);border-radius:var(--radius);padding:16px 18px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .stepper-label{display:flex;align-items:center;gap:10px;}
+  .stepper-label .g-ic{font-size:20px;}
+  .stepper-label .g-name{font-family:'Space Grotesk';font-weight:600;font-size:14px;}
+  .stepper-controls{display:flex;align-items:center;gap:14px;}
+  .step-btn{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--line);background:#fff;font-size:16px;font-family:'Space Grotesk';font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--brand-deep);}
+  .step-btn:disabled{opacity:0.3;cursor:not-allowed;}
+  .step-count{font-family:'IBM Plex Mono';font-weight:600;font-size:16px;min-width:18px;text-align:center;}
+  .party-summary{background:var(--bg);border-radius:14px;padding:14px 16px;margin:16px 0;display:flex;justify-content:space-between;align-items:center;}
+  .party-summary .ps-l{font-size:12px;color:var(--ink-soft);}
+  .party-summary .ps-v{font-family:'IBM Plex Mono';font-weight:600;font-size:16px;color:var(--brand-deep);}
 
   .cta{width:100%;background:var(--brand);color:#fff;border:none;border-radius:14px;padding:16px;font-family:'Space Grotesk';font-weight:600;font-size:15px;cursor:pointer;margin-top:6px;}
   .cta:disabled{background:#C9C4B2;cursor:not-allowed;}
-  .cta.gold{background:var(--gold);color:var(--brand-deep);}
   .cta.ghost{background:transparent;color:var(--brand-deep);border:1.5px solid var(--line);}
-  .switch-link{text-align:center;font-size:13px;color:var(--ink-soft);margin-top:14px;}
-  .switch-link a{color:var(--brand-deep);font-weight:600;cursor:pointer;text-decoration:underline;}
+  .cta.gold{background:var(--gold);color:var(--brand-deep);}
 
-  .car-diagram{background:#fff;border:1.5px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:16px;}
+  .car-diagram{background:#fff;border:1.5px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:18px;}
   .cd-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px;}
   .cd-title{font-family:'Space Grotesk';font-weight:600;font-size:14px;}
   .cd-sub{font-size:11px;color:var(--ink-soft);font-family:'IBM Plex Mono';}
@@ -87,14 +83,20 @@
   .seat.men{background:var(--men);border:2px solid var(--men);color:#fff;}
   .seat.women{background:var(--women);border:2px solid var(--women);color:#fff;}
   .seat.private{background:var(--gold);border:2px solid var(--gold);color:var(--brand-deep);}
+  .seat.you{box-shadow:0 0 0 3px var(--gold);}
   .seat-row{display:flex;justify-content:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
   .row-tag{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--ink-soft);text-align:center;margin-bottom:6px;}
   .progress-track{height:6px;background:var(--bg);border-radius:6px;overflow:hidden;margin-top:14px;}
   .progress-fill{height:100%;background:var(--gold);border-radius:6px;transition:width .3s;}
   .status-line{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-soft);margin-bottom:16px;}
-  .status-line .dot{width:8px;height:8px;border-radius:50%;background:var(--gold);animation:pulse 1.4s infinite;}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--gold);animation:pulse 1.4s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
   .private-badge{display:inline-block;background:var(--gold);color:var(--brand-deep);font-family:'Space Grotesk';font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;padding:4px 9px;border-radius:8px;margin-left:8px;}
 
+  .captain-card{background:var(--brand);color:#fff;border-radius:var(--radius);padding:20px;display:flex;align-items:center;gap:14px;margin-bottom:16px;}
+  .cap-avatar{width:52px;height:52px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk';font-weight:700;font-size:18px;color:var(--brand-deep);flex-shrink:0;}
+  .cap-name{font-family:'Space Grotesk';font-weight:600;font-size:16px;}
+  .cap-meta{font-size:12px;opacity:0.75;margin-top:3px;}
   .fare-box{background:#fff;border:1.5px solid var(--line);border-radius:var(--radius);padding:18px;display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
   .fare-box .fl{font-size:12px;color:var(--ink-soft);}
   .fare-box .fv{font-family:'IBM Plex Mono';font-weight:600;font-size:22px;color:var(--brand-deep);}
@@ -103,11 +105,16 @@
   .screen.active{display:block;animation:fadein .25s;}
   @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
 
+  .nav-back{background:none;border:none;color:var(--ink-soft);font-size:13px;margin-bottom:14px;cursor:pointer;display:flex;align-items:center;gap:4px;padding:0;}
+  .suggest-chip{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
+  .suggest-chip:active{transform:scale(0.98);}
+  .suggest-chip .sc-name{font-family:'Space Grotesk';font-weight:600;font-size:14px;}
+  .suggest-chip .sc-meta{font-size:11px;color:var(--ink-soft);margin-top:2px;}
+  .suggest-chip .sc-go{font-size:12px;font-family:'Space Grotesk';font-weight:600;color:var(--brand-deep);background:var(--bg);border-radius:9px;padding:6px 10px;white-space:nowrap;}
   .history-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);font-size:13px;}
   .history-row:last-child{border-bottom:none;}
   .hr-meta{color:var(--ink-soft);font-size:11px;margin-top:2px;}
   .hr-fare{font-family:'IBM Plex Mono';font-weight:600;color:var(--brand-deep);}
-  .nav-back{background:none;border:none;color:var(--ink-soft);font-size:13px;margin-bottom:14px;cursor:pointer;display:flex;align-items:center;gap:4px;padding:0;}
 </style>
 </head>
 <body>
@@ -116,12 +123,13 @@
   <header class="top">
     <div class="conn-dot" id="connDot"></div>
     <div class="brand-row">
-      <div class="brand">Rahlah <small>Captain</small></div>
-      <div class="status-toggle" id="statusToggle"><span class="dot"></span><span id="statusText">Offline</span></div>
+      <div class="brand">Rahlah <small>Shared shuttle · A ⇄ B</small></div>
+      <div class="avatar" id="userAvatar" onclick="goTo('screen-account')">?</div>
     </div>
-    <div class="earnings-strip">
-      <div class="es-box"><div class="es-label">Total earned</div><div class="es-value" id="todayEarnings">0 SAR</div></div>
-      <div class="es-box"><div class="es-label">Trips</div><div class="es-value" id="todayTrips">0</div></div>
+    <div class="route-pill">
+      <div class="pt"><div class="label">From</div><div class="name" id="fromName">Point A</div></div>
+      <button class="swap-btn" onclick="swapRoute()">⇄</button>
+      <div class="pt" style="text-align:right"><div class="label">To</div><div class="name" id="toName">Point B</div></div>
     </div>
   </header>
 
@@ -131,107 +139,68 @@
     <section class="screen" id="screen-auth">
       <div class="section-title" id="authTitle">Log in</div>
       <div id="authError"></div>
-      <div class="field" id="fieldName" style="display:none;"><label>Your name</label><input id="regName" placeholder="e.g. Mohammed A." /></div>
+      <div class="field" id="fieldName" style="display:none;"><label>Your name</label><input id="regName" placeholder="e.g. Layla A." /></div>
       <div class="field"><label>Phone number</label><input id="authPhone" placeholder="05xxxxxxxx" /></div>
-      <div class="field" id="fieldPlate" style="display:none;"><label>Vehicle plate</label><input id="regPlate" placeholder="e.g. 4211 KLM" /></div>
+      <div class="field" id="fieldGender" style="display:none;">
+        <label>Gender</label>
+        <div class="stepper-controls" style="justify-content:flex-start;gap:10px;">
+          <button class="step-btn" id="genderMenBtn" style="width:auto;border-radius:12px;padding:10px 16px;" onclick="setRegGender('men')">♂ Man</button>
+          <button class="step-btn" id="genderWomenBtn" style="width:auto;border-radius:12px;padding:10px 16px;" onclick="setRegGender('women')">♀ Woman</button>
+        </div>
+      </div>
       <div class="field"><label>Password</label><input id="authPassword" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter') submitAuth()" /></div>
-      <button class="cta gold" id="authSubmitBtn" onclick="submitAuth()">Log in</button>
-      <div class="switch-link" id="authSwitch">New here? <a onclick="toggleAuthMode()">Create a captain account</a></div>
+      <button class="cta" id="authSubmitBtn" onclick="submitAuth()">Log in</button>
+      <div class="switch-link" id="authSwitch">New here? <a onclick="toggleAuthMode()">Create an account</a></div>
     </section>
 
-    <!-- DOCUMENTS (required before going online; also used to re-upload after rejection) -->
-    <section class="screen" id="screen-documents">
-      <div class="profile-row">
-        <div><div class="profile-name" id="docsProfName">—</div><div class="profile-meta">Document verification</div></div>
-        <button class="logout-link" onclick="logout()">Log out</button>
-      </div>
-      <div id="rejectionBanner" style="display:none;" class="error-box"></div>
-      <div class="section-title">Upload your documents</div>
-      <p class="section-note">All five are required before you can go online. A supervisor reviews them
-        before your account is activated — this usually doesn't take long.</p>
-      <div id="docFieldsWrap"></div>
-      <div id="docsError"></div>
-      <button class="cta gold" id="docsSubmitBtn" onclick="submitDocuments()">Save documents</button>
-    </section>
-
-    <!-- PENDING REVIEW -->
-    <section class="screen" id="screen-pending-review">
-      <button class="nav-back" onclick="logout()">← Log out</button>
-      <div class="car-diagram" style="text-align:center;padding:34px 20px;">
-        <div style="font-size:32px;margin-bottom:10px;">🕐</div>
-        <div class="cd-title" style="margin-bottom:8px;">Documents under review</div>
-        <p style="font-size:13px;color:var(--ink-soft);line-height:1.5;margin:0 0 16px;">
-          A supervisor is reviewing your documents. You'll be able to go online as soon as
-          your account is approved.
-        </p>
-        <button class="cta ghost" onclick="goTo('screen-documents'); renderDocFields();">Review my uploads</button>
-      </div>
-    </section>
-
-    <!-- SUSPENDED -->
-    <section class="screen" id="screen-suspended">
-      <button class="nav-back" onclick="logout()">← Log out</button>
-      <div class="car-diagram" style="text-align:center;padding:34px 20px;">
-        <div style="font-size:32px;margin-bottom:10px;">⛔</div>
-        <div class="cd-title" style="margin-bottom:8px;">Account suspended</div>
-        <p style="font-size:13px;color:var(--ink-soft);line-height:1.5;margin:0;">
-          Your account has been suspended. Contact support for help.
-        </p>
-      </div>
-    </section>
-
-    <!-- SETUP (choose vehicle/direction, go online) -->
-    <section class="screen" id="screen-setup">
+    <!-- ACCOUNT / PROFILE -->
+    <section class="screen" id="screen-account">
+      <button class="nav-back" onclick="goTo('screen-pick')">← Back to rides</button>
       <div class="profile-row">
         <div><div class="profile-name" id="profName">—</div><div class="profile-meta" id="profMeta">—</div></div>
         <button class="logout-link" onclick="logout()">Log out</button>
       </div>
-      <div class="section-title">Vehicle type</div>
+      <div class="section-title">Your trips</div>
+      <div id="historyList"></div>
+    </section>
+
+    <section class="screen" id="screen-pick">
+      <div class="section-title">Choose a ride</div>
       <div id="vehicleList"></div>
-      <div class="section-title">Direction you're driving</div>
-      <div class="dir-toggle">
-        <div class="dir-btn active" id="dirA" onclick="setDirection('A_TO_B')">A → B</div>
-        <div class="dir-btn" id="dirB" onclick="setDirection('B_TO_A')">B → A</div>
-      </div>
-      <div class="notify-row" id="notifyRow">
-        <div><div class="notify-title">🔔 Notify me when off duty</div><div class="notify-sub">Get a push alert if a full car or booking needs a captain while you're away.</div></div>
-        <button class="notify-toggle" id="notifyToggle" onclick="toggleNotifications()">Enable</button>
-      </div>
-      <button class="cta gold" id="goOnlineBtn" disabled onclick="goOnline()">Go online</button>
     </section>
 
-    <section class="screen" id="screen-idle">
-      <button class="nav-back" onclick="goOffline()">← Go offline</button>
-      <div class="status-line"><span class="dot"></span><span>You're online — waiting for a car</span></div>
-      <div class="car-diagram" style="text-align:center;padding:34px 20px;">
-        <div style="font-size:32px;margin-bottom:10px;">🕐</div>
-        <div class="cd-title" style="margin-bottom:8px;">No car needs you yet</div>
-        <p style="font-size:13px;color:var(--ink-soft);line-height:1.5;margin:0;">
-          You'll only be sent to the pickup zone once a car is completely full, a customer
-          books the whole car, or you accept a partial-car offer below.
-        </p>
-      </div>
-    </section>
-
-    <section class="screen" id="screen-offer">
-      <div class="status-line"><span class="dot"></span><span>A customer is asking if you'll take a partial car</span></div>
-      <div class="car-diagram">
-        <div class="cd-head">
-          <div class="cd-title" id="offerTitle">Sedan</div>
-          <div class="cd-sub" id="offerRoute">A → B</div>
+    <section class="screen" id="screen-party">
+      <button class="nav-back" onclick="goTo('screen-pick')">← Back</button>
+      <div class="section-title">Who's travelling?</div>
+      <p class="section-note">Add everyone in your group. Each seat still follows the front-seat and
+        same-row rules, so your party may end up split across rows if it's mixed.</p>
+      <div class="stepper-card">
+        <div class="stepper-label"><span class="g-ic">♂</span><span class="g-name">Men</span></div>
+        <div class="stepper-controls">
+          <button class="step-btn" onclick="changeParty('men',-1)">−</button>
+          <span class="step-count" id="menCount">0</span>
+          <button class="step-btn" onclick="changeParty('men',1)">+</button>
         </div>
-        <div id="offerSeatMap"></div>
       </div>
-      <p style="font-size:13px;color:var(--ink-soft);margin-bottom:16px;" id="offerSummary">
-        2 passengers waiting — the rest of the seats would ride empty.
-      </p>
-      <button class="cta gold" onclick="respondOffer('accept')">Accept and go pick them up</button>
-      <button class="cta ghost" onclick="respondOffer('decline')">Not this time — keep waiting for full</button>
+      <div class="stepper-card">
+        <div class="stepper-label"><span class="g-ic">♀</span><span class="g-name">Women</span></div>
+        <div class="stepper-controls">
+          <button class="step-btn" onclick="changeParty('women',-1)">−</button>
+          <span class="step-count" id="womenCount">0</span>
+          <button class="step-btn" onclick="changeParty('women',1)">+</button>
+        </div>
+      </div>
+      <div class="party-summary">
+        <div><div class="ps-l">Total seats</div><div class="ps-v" id="partyTotal">0</div></div>
+        <div style="text-align:right"><div class="ps-l">Fare</div><div class="ps-v" id="partyFare">0 SAR</div></div>
+      </div>
+      <div id="partyError"></div>
+      <button class="cta" id="partyContinue" disabled onclick="requestSeats()">Request seats</button>
     </section>
 
-    <section class="screen" id="screen-forming">
-      <button class="nav-back" onclick="goOffline()">← Go offline</button>
-      <div class="status-line"><span class="dot"></span><span id="formingStatus">Waiting for passengers…</span></div>
+    <section class="screen" id="screen-matching">
+      <button class="nav-back" onclick="leaveMatching()">← Cancel and go back</button>
+      <div class="status-line"><span class="dot"></span><span id="matchStatus">Finding you a seat…</span></div>
       <div class="car-diagram">
         <div class="cd-head">
           <div class="cd-title" id="carTitle">Sedan <span class="private-badge" id="privateBadge" style="display:none;">Private</span></div>
@@ -240,41 +209,49 @@
         <div id="seatMap"></div>
         <div class="progress-track"><div class="progress-fill" id="fillBar" style="width:0%"></div></div>
       </div>
-      <button class="cta ghost" id="startEarlyBtn" onclick="startTrip()">Start trip now (partial car)</button>
-      <button class="cta" id="startFullBtn" disabled onclick="startTrip()">Start trip — car full</button>
+      <div class="fare-box"><div><div class="fl">Your fare</div></div><div class="fv" id="matchFare">4 SAR</div></div>
+      <div id="waitPanel" style="display:none;">
+        <p class="section-note" style="margin-bottom:10px;">Still filling up. A captain won't be sent until this
+          car is full — or accepts it as a partial trip. While you wait, you can also:</p>
+        <div id="suggestionChips"></div>
+        <button class="cta ghost" id="bookWholeInstead" onclick="switchToPrivate()">Book the whole car instead</button>
+      </div>
     </section>
 
     <section class="screen" id="screen-trip">
-      <div class="section-title">Trip in progress</div>
+      <div class="section-title" id="tripStage">Captain is on the way</div>
+      <div class="captain-card">
+        <div class="cap-avatar" id="capInitials">MA</div>
+        <div><div class="cap-name" id="capName">Mohammed A.</div><div class="cap-meta" id="capMeta">Toyota Camry · White · 4211 KLM</div></div>
+      </div>
       <div class="car-diagram">
-        <div class="cd-head"><div class="cd-title" id="tripCarTitle">Sedan</div><div class="cd-sub" id="tripCarRoute">A → B</div></div>
+        <div class="cd-head"><div class="cd-title">Your booking</div><div class="cd-sub" id="seatCode">Row 1 · Seat B</div></div>
         <div id="tripSeatMap"></div>
       </div>
-      <div class="fare-box"><div><div class="fl">Fare to collect this trip</div></div><div class="fv" id="tripFare">4 SAR</div></div>
-      <button class="cta" onclick="completeTrip()">Mark trip complete</button>
+      <div class="fare-box"><div><div class="fl">Fare due (cash to captain)</div></div><div class="fv" id="tripFare">4 SAR</div></div>
     </section>
 
     <section class="screen" id="screen-done">
-      <div style="text-align:center;padding:20px 10px;">
+      <div style="text-align:center;padding:30px 10px;">
         <div style="font-size:40px;">✅</div>
-        <div class="section-title" style="margin-top:10px;">Trip closed out</div>
+        <div class="section-title" style="margin-top:10px;">Trip complete</div>
+        <p style="font-size:13px;color:var(--ink-soft);">Thanks for riding with Rahlah.</p>
       </div>
-      <div class="fare-box"><div><div class="fl">You earned this trip</div></div><div class="fv" id="doneFare">4 SAR</div></div>
-      <button class="cta" onclick="continueToNext()">Accept next car</button>
-      <button class="cta ghost" onclick="goOffline()">Go offline</button>
-      <div class="section-title" style="margin-top:26px;">Recent trips</div>
-      <div id="historyList"></div>
+      <div class="fare-box"><div><div class="fl">Total paid</div></div><div class="fv" id="doneFare">4 SAR</div></div>
+      <button class="cta" onclick="resetToHome()">Book another ride</button>
     </section>
 
   </main>
 </div>
 
 <script>
+// ===== CONFIGURE BEFORE DEPLOYING SEPARATELY FROM THE BACKEND =====
+// Same-origin (local dev, or single combined deploy) needs no change. If this
 // ===== EDIT THIS BEFORE DEPLOYING AS ITS OWN STATIC SITE =====
 // Leave blank for local dev (falls back to http://localhost:3000) or if this
 // file is served by the same server as the API. If deployed separately, set
 // this to your backend's URL, e.g. 'https://rahlah-backend.onrender.com'.
-const CONFIGURED_API_BASE = 'https://rahlah-backend.onrender.com';
+const CONFIGURED_API_BASE = '';
 // ===============================================================
 const API_BASE = CONFIGURED_API_BASE || (location.hostname === 'localhost' ? 'http://localhost:3000' : '');
 const WS_BASE = API_BASE ? API_BASE.replace(/^http/, 'ws') : `${location.protocol==='https:'?'wss:':'ws:'}//${location.host}`;
@@ -282,17 +259,13 @@ const WS_BASE = API_BASE ? API_BASE.replace(/^http/, 'ws') : `${location.protoco
 const VEHICLE_ICONS = { sedan:'🚗', family:'🚙', minibus:'🚐' };
 const VEHICLE_ROWLABEL = { sedan:'Back row', family:'Row', minibus:'Row' };
 let VEHICLES = {};
-let POINTS = { A: { full: 'Point A', short: 'A' }, B: { full: 'Point B', short: 'B' } }; // overwritten by /api/points on load
-function routeLabel(direction, useShort){
-  const a = useShort ? POINTS.A.short : POINTS.A.full;
-  const b = useShort ? POINTS.B.short : POINTS.B.full;
-  return direction==='A_TO_B' ? `${a} → ${b}` : `${b} → ${a}`;
-}
 let authMode = 'login';
-let token = localStorage.getItem('rahlah_captain_token') || null;
+let regGender = null;
+let token = localStorage.getItem('rahlah_customer_token') || null;
+
 let state = {
-  vehicleType:null, direction:'A_TO_B', captain:null, car:null,
-  history:[], totalEarnings:0, notifyOn: localStorage.getItem('rahlah_notify_on')==='1',
+  customer: null, vehicleType: null, direction: 'A_TO_B', mode: 'shared',
+  party: { men:0, women:0 }, carId: null, mySeats: [], car: null, matched:false, done:false,
 };
 
 function authHeaders(json){
@@ -308,410 +281,349 @@ function connectWS(){
   ws.onclose = () => { document.getElementById('connDot').classList.remove('live'); setTimeout(connectWS, 1500); };
   ws.onmessage = (evt) => {
     const msg = JSON.parse(evt.data);
-    if (msg.type !== 'car_update' || !token || !state.captain) return;
-    const car = msg.car;
-    if (!state.car && car.pendingOffer && car.pendingOffer.captainId === state.captain.id){ enterOffer(car); return; }
-    if (car.captainId === state.captain.id){
-      if (!state.car || document.getElementById('screen-idle').classList.contains('active') || document.getElementById('screen-offer').classList.contains('active')){
-        enterForming(car);
-      } else if (state.car && car.id === state.car.id && document.getElementById('screen-forming').classList.contains('active')){
-        state.car = car; renderSeatMap('seatMap', car); updateForming(car);
-      }
-    }
+    if (msg.type === 'car_update' && state.carId && msg.car.id === state.carId) handleCarUpdate(msg.car);
   };
 }
 connectWS();
 setInterval(() => {
-  if (!token || !state.captain) return;
-  fetch(API_BASE + '/api/captain/me', { headers: authHeaders() }).then(r=>r.ok?r.json():null).then(data=>{
-    if (!data) return;
-    if (data.car && (!state.car || state.car.id !== data.car.id || document.getElementById('screen-forming').classList.contains('active'))){
-      if (!state.car || state.car.id !== data.car.id){ enterForming(data.car); }
-      else { state.car = data.car; renderSeatMap('seatMap', data.car); updateForming(data.car); }
-    } else if (!data.car && data.offer && !document.getElementById('screen-offer').classList.contains('active')){
-      enterOffer(data.offer);
-    }
-  }).catch(()=>{});
+  if (state.carId && !state.done) {
+    fetch(`${API_BASE}/api/car/${state.carId}`).then(r=>r.ok?r.json():null).then(car=>{ if(car) handleCarUpdate(car); }).catch(()=>{});
+  }
 }, 4000);
 
 fetch(API_BASE + '/api/vehicles').then(r=>r.json()).then(v=>{ VEHICLES = v; renderVehicleList(); }).catch(()=>{
-  document.getElementById('vehicleList').innerHTML = '<div style="font-size:13px;color:#8A3420;">Can\'t reach the server. Is it running?</div>';
+  document.getElementById('vehicleList').innerHTML = '<div class="error-box">Can\'t reach the server. Is it running?</div>';
 });
-fetch(API_BASE + '/api/points').then(r=>r.json()).then(p=>{
-  POINTS = p;
-  document.getElementById('dirA').textContent = routeLabel('A_TO_B');
-  document.getElementById('dirB').textContent = routeLabel('B_TO_A');
-}).catch(()=>{});
 
-function totalSeats(vtype){ const c=VEHICLES[vtype]; return c.frontSeats + c.rows*3; }
 function goTo(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
+function totalSeats(vtype){ const c = VEHICLES[vtype]; return c.frontSeats + c.rows*3; }
 
 /* ---------- auth ---------- */
 function toggleAuthMode(){
   authMode = authMode==='login' ? 'register' : 'login';
-  document.getElementById('authTitle').textContent = authMode==='login' ? 'Log in' : 'Create a captain account';
+  document.getElementById('authTitle').textContent = authMode==='login' ? 'Log in' : 'Create an account';
   document.getElementById('authSubmitBtn').textContent = authMode==='login' ? 'Log in' : 'Create account';
   document.getElementById('fieldName').style.display = authMode==='register' ? 'block' : 'none';
-  document.getElementById('fieldPlate').style.display = authMode==='register' ? 'block' : 'none';
+  document.getElementById('fieldGender').style.display = authMode==='register' ? 'block' : 'none';
   document.getElementById('authSwitch').innerHTML = authMode==='login'
-    ? `New here? <a onclick="toggleAuthMode()">Create a captain account</a>`
+    ? `New here? <a onclick="toggleAuthMode()">Create an account</a>`
     : `Already have an account? <a onclick="toggleAuthMode()">Log in</a>`;
   document.getElementById('authError').innerHTML = '';
+}
+function setRegGender(g){
+  regGender = g;
+  document.getElementById('genderMenBtn').style.background = g==='men' ? 'var(--men)' : '#fff';
+  document.getElementById('genderMenBtn').style.color = g==='men' ? '#fff' : 'var(--brand-deep)';
+  document.getElementById('genderWomenBtn').style.background = g==='women' ? 'var(--women)' : '#fff';
+  document.getElementById('genderWomenBtn').style.color = g==='women' ? '#fff' : 'var(--brand-deep)';
 }
 async function submitAuth(){
   const phone = document.getElementById('authPhone').value.trim();
   const password = document.getElementById('authPassword').value;
   document.getElementById('authError').innerHTML = '';
   if (!phone || !password){ document.getElementById('authError').innerHTML = '<div class="error-box">Enter phone and password.</div>'; return; }
-  const body = authMode==='login' ? { phone, password } : { phone, password, name: document.getElementById('regName').value.trim(), plate: document.getElementById('regPlate').value.trim() };
-  if (authMode==='register' && (!body.name || !body.plate)){ document.getElementById('authError').innerHTML = '<div class="error-box">Name and plate are required.</div>'; return; }
+  const body = authMode==='login' ? { phone, password } : { phone, password, name: document.getElementById('regName').value.trim(), gender: regGender };
+  if (authMode==='register' && (!body.name || !body.gender)){ document.getElementById('authError').innerHTML = '<div class="error-box">Name and gender are required.</div>'; return; }
   try{
-    const res = await fetch(`${API_BASE}/api/captain/${authMode}`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    const res = await fetch(`${API_BASE}/api/customer/${authMode}`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
     const data = await res.json();
     if (!res.ok){ document.getElementById('authError').innerHTML = `<div class="error-box">${data.error}</div>`; return; }
     token = data.token;
-    localStorage.setItem('rahlah_captain_token', token);
-    state.captain = data.captain;
+    localStorage.setItem('rahlah_customer_token', token);
+    state.customer = data.customer;
     afterAuth(data.car);
   } catch(e){ document.getElementById('authError').innerHTML = '<div class="error-box">Couldn\'t reach the server.</div>'; }
 }
 function afterAuth(car){
+  document.getElementById('userAvatar').textContent = state.customer.gender==='men' ? '♂' : '♀';
   updateProfileUI();
-  updateEarningsUI();
-  const status = state.captain.accountStatus;
-  if (status === 'documents_needed' || status === 'rejected'){
-    goTo('screen-documents');
-    renderDocFields();
-    return;
-  }
-  if (status === 'pending_review'){ goTo('screen-pending-review'); return; }
-  if (status === 'suspended'){ goTo('screen-suspended'); return; }
-  // status === 'active'
   if (car){
-    if (car.status === 'in_trip') enterTripFromCar(car);
-    else enterForming(car);
-    startLocationSharing();
+    state.carId = car.id; state.vehicleType = car.vehicleType; state.direction = car.direction;
+    state.mode = car.mode; state.mySeats = car.mode==='private' ? 'ALL' : findMySeats(car);
+    if (car.status === 'in_trip' || car.status === 'ready'){ state.matched = true; enterTripScreen(car); }
+    else { state.matched = false; enterMatchingScreenFromCar(car); }
   } else {
-    document.getElementById('statusToggle').classList.toggle('online', state.captain.status==='online');
-    document.getElementById('statusText').textContent = state.captain.status==='online' ? 'Online' : 'Offline';
-    if (state.captain.status==='online'){ goTo('screen-idle'); startLocationSharing(); } else goTo('screen-setup');
+    renderVehicleList();
+    goTo('screen-pick');
   }
-  if (state.notifyOn) setNotifyUI(true);
 }
-
-/* ---------- documents ---------- */
-const DOC_TYPES = [
-  { key:'license', label:"Driver's license" },
-  { key:'vehicleRegistration', label:'Vehicle registration' },
-  { key:'insurance', label:'Insurance' },
-  { key:'inspection', label:'Periodic inspection certificate' },
-  { key:'photo', label:'Photo of yourself' },
-];
-function renderDocFields(){
-  document.getElementById('docsProfName').textContent = state.captain.name;
-  const reason = state.captain.rejectionReason;
-  const banner = document.getElementById('rejectionBanner');
-  if (state.captain.accountStatus === 'rejected' && reason){
-    banner.style.display = 'block';
-    banner.textContent = `Not approved: ${reason} — please re-upload the affected document(s) below.`;
-  } else {
-    banner.style.display = 'none';
-  }
-  const wrap = document.getElementById('docFieldsWrap');
-  wrap.innerHTML = DOC_TYPES.map(d => {
-    const uploaded = !!(state.captain.documents && state.captain.documents[d.key]);
-    return `
-      <div class="doc-row">
-        <div class="doc-row-top">
-          <div class="doc-name">${d.label}</div>
-          <div class="doc-status ${uploaded?'uploaded':'missing'}">${uploaded?'Uploaded ✓':'Missing'}</div>
-        </div>
-        <input type="file" id="doc-${d.key}" accept="image/*,application/pdf" />
-      </div>`;
-  }).join('');
-}
-async function submitDocuments(){
-  const formData = new FormData();
-  let anySelected = false;
-  DOC_TYPES.forEach(d => {
-    const input = document.getElementById('doc-'+d.key);
-    if (input && input.files && input.files[0]){ formData.append(d.key, input.files[0]); anySelected = true; }
-  });
-  document.getElementById('docsError').innerHTML = '';
-  if (!anySelected){ document.getElementById('docsError').innerHTML = '<div class="error-box">Choose at least one file to upload.</div>'; return; }
-  document.getElementById('docsSubmitBtn').disabled = true;
-  document.getElementById('docsSubmitBtn').textContent = 'Uploading…';
-  try{
-    const res = await fetch(API_BASE + '/api/captain/documents', {
-      method:'POST', headers:{ 'Authorization': 'Bearer ' + token }, // no Content-Type — browser sets the multipart boundary
-      body: formData,
-    });
-    const data = await res.json();
-    if (!res.ok){ document.getElementById('docsError').innerHTML = `<div class="error-box">${data.error}</div>`; return; }
-    state.captain = data.captain;
-    afterAuth(null);
-  } catch(e){ document.getElementById('docsError').innerHTML = '<div class="error-box">Couldn\'t reach the server.</div>'; }
-  finally{
-    document.getElementById('docsSubmitBtn').disabled = false;
-    document.getElementById('docsSubmitBtn').textContent = 'Save documents';
-  }
+function findMySeats(car){
+  const mine = [];
+  car.front.forEach((f,fi)=>{}); // seat ownership for resumed sessions isn't tracked client-side beyond bookings; highlight nothing extra
+  return [];
 }
 function logout(){
-  stopLocationSharing();
-  token = null; state.captain = null; state.car = null;
-  localStorage.removeItem('rahlah_captain_token');
+  token = null; state.customer = null; state.carId = null; state.car = null;
+  localStorage.removeItem('rahlah_customer_token');
   goTo('screen-auth');
 }
 function updateProfileUI(){
-  document.getElementById('profName').textContent = state.captain.name;
-  document.getElementById('profMeta').textContent = state.captain.phone + ' · ' + state.captain.plate;
+  document.getElementById('profName').textContent = state.customer.name;
+  document.getElementById('profMeta').textContent = state.customer.phone + ' · ' + (state.customer.gender==='men'?'Man':'Woman');
+  renderCustomerHistory();
 }
-function updateEarningsUI(){
-  document.getElementById('todayEarnings').textContent = state.captain.earnings + ' SAR';
-  document.getElementById('todayTrips').textContent = state.captain.tripHistory.length;
-  state.history = state.captain.tripHistory;
-}
-
-/* ---------- push notifications ---------- */
-function urlBase64ToUint8Array(base64String){
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding).replace(/-/g,'+').replace(/_/g,'/');
-  const raw = atob(base64);
-  return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)));
-}
-async function toggleNotifications(){
-  if (state.notifyOn){
-    try{ await fetch(API_BASE + '/api/push/unsubscribe', { method:'POST', headers: authHeaders() }); } catch(e){}
-    localStorage.setItem('rahlah_notify_on', '0');
-    setNotifyUI(false);
-    return;
-  }
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)){ alert('Push notifications are not supported in this browser.'); return; }
-  try{
-    const perm = await Notification.requestPermission();
-    if (perm !== 'granted'){ alert("Notifications were not allowed — you can still use the app, you just won't get alerts while off duty."); return; }
-    const reg = await navigator.serviceWorker.register('/sw.js');
-    const { publicKey } = await fetch(API_BASE + '/api/push/vapid-public-key').then(r=>r.json());
-    let sub = await reg.pushManager.getSubscription();
-    if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey: urlBase64ToUint8Array(publicKey) });
-    await fetch(API_BASE + '/api/push/subscribe', { method:'POST', headers: authHeaders(true), body: JSON.stringify({ subscription: sub }) });
-    localStorage.setItem('rahlah_notify_on', '1');
-    setNotifyUI(true);
-  } catch(e){ alert("Couldn't set up notifications: " + e.message); }
-}
-function setNotifyUI(on){
-  state.notifyOn = on;
-  const btn = document.getElementById('notifyToggle');
-  btn.textContent = on ? 'On ✓' : 'Enable';
-  btn.classList.toggle('on', on);
+function renderCustomerHistory(){
+  const wrap = document.getElementById('historyList');
+  const hist = state.customer.tripHistory || [];
+  if (!hist.length){ wrap.innerHTML = '<div style="font-size:13px;color:var(--ink-soft);">No trips yet.</div>'; return; }
+  wrap.innerHTML = hist.slice(0,20).map(h => `
+    <div class="history-row">
+      <div><div>${VEHICLES[h.vehicleType].name}${h.mode==='private'?' (private)':''} · ${h.direction==='A_TO_B'?'A → B':'B → A'}</div><div class="hr-meta">${h.seats} seat${h.seats===1?'':'s'}</div></div>
+      <div class="hr-fare">${h.fare} SAR</div>
+    </div>
+  `).join('');
 }
 
-/* ---------- vehicle/direction/online ---------- */
+/* ---------- vehicle picking / party ---------- */
+function swapRoute(){
+  state.direction = state.direction==='A_TO_B' ? 'B_TO_A' : 'A_TO_B';
+  const from = document.getElementById('fromName'); const to = document.getElementById('toName');
+  const tmp = from.textContent; from.textContent = to.textContent; to.textContent = tmp;
+}
 function renderVehicleList(){
   const wrap = document.getElementById('vehicleList');
-  wrap.innerHTML='';
+  wrap.innerHTML = '';
   Object.entries(VEHICLES).forEach(([key,cfg])=>{
     const div = document.createElement('div');
-    div.className = 'option-card' + (state.vehicleType===key ? ' selected':'');
-    div.onclick = ()=>{ state.vehicleType=key; renderVehicleList(); checkGoOnline(); };
+    div.className = 'vehicle-card';
     div.innerHTML = `
-      <div class="v-icon">${VEHICLE_ICONS[key]}</div>
-      <div class="v-info">
-        <div class="v-name">${cfg.name}</div>
-        <div class="v-seats">${totalSeats(key)} seats · ${cfg.frontSeats} front (men) + ${cfg.rows} row${cfg.rows>1?'s':''} of 3</div>
+      <div class="vc-top">
+        <div class="v-icon">${VEHICLE_ICONS[key]}</div>
+        <div class="v-info">
+          <div class="v-name">${cfg.name}</div>
+          <div class="v-seats">${cfg.frontSeats} front (men) + ${cfg.rows} row${cfg.rows>1?'s':''} of 3 (men or women) · ${totalSeats(key)} seats total</div>
+        </div>
+        <div class="v-price">${cfg.price} SAR<span>per seat</span></div>
       </div>
-      <div class="v-price">${cfg.price} SAR/seat<span>or ${cfg.fullPrice} full car</span></div>
+      <div class="vc-full">
+        <div class="vcf-label">Book the whole car, just for your group</div>
+        <button class="vc-full-btn" data-action="full">${cfg.fullPrice} SAR</button>
+      </div>
     `;
+    div.querySelector('.vc-top').onclick = ()=>selectSharedVehicle(key);
+    div.querySelector('[data-action="full"]').onclick = (e)=>{ e.stopPropagation(); bookPrivate(key); };
     wrap.appendChild(div);
   });
 }
-function setDirection(d){
-  state.direction = d;
-  document.getElementById('dirA').classList.toggle('active', d==='A_TO_B');
-  document.getElementById('dirB').classList.toggle('active', d==='B_TO_A');
+function selectSharedVehicle(key){
+  state.vehicleType = key; state.mode='shared';
+  state.party = { men: state.customer.gender==='men'?1:0, women: state.customer.gender==='women'?1:0 };
+  document.getElementById('partyError').innerHTML='';
+  updatePartyUI();
+  goTo('screen-party');
 }
-function checkGoOnline(){ document.getElementById('goOnlineBtn').disabled = !state.vehicleType; }
+function changeParty(kind, delta){
+  const next = state.party[kind] + delta;
+  const other = state.party[kind==='men'?'women':'men'];
+  if (next<0) return;
+  if (next+other > totalSeats(state.vehicleType)) return;
+  state.party[kind] = next;
+  updatePartyUI();
+}
+function updatePartyUI(){
+  document.getElementById('menCount').textContent = state.party.men;
+  document.getElementById('womenCount').textContent = state.party.women;
+  const total = state.party.men + state.party.women;
+  document.getElementById('partyTotal').textContent = total;
+  document.getElementById('partyFare').textContent = (total*VEHICLES[state.vehicleType].price) + ' SAR';
+  document.getElementById('partyContinue').disabled = total===0;
+}
 
-async function goOnline(){
+async function requestSeats(){
+  document.getElementById('partyError').innerHTML='';
+  document.getElementById('partyContinue').disabled = true;
   try{
-    const res = await fetch(API_BASE + '/api/captain/online', {
+    const res = await fetch(API_BASE + '/api/book', {
       method:'POST', headers: authHeaders(true),
-      body: JSON.stringify({ vehicleType: state.vehicleType, direction: state.direction }),
+      body: JSON.stringify({ vehicleType: state.vehicleType, direction: state.direction, party: state.party }),
     });
     const data = await res.json();
-    if (!res.ok){ alert(data.error || 'Could not go online.'); return; }
-    state.captain = data.captain;
-    updateEarningsUI();
-    document.getElementById('statusToggle').classList.add('online');
-    document.getElementById('statusText').textContent='Online';
-    startLocationSharing();
-    if (data.car) enterForming(data.car); else goTo('screen-idle');
-  } catch(e){ alert("Couldn't reach the server."); }
+    if (!res.ok){
+      document.getElementById('partyError').innerHTML = `<div class="error-box">${data.error}</div>`;
+      document.getElementById('partyContinue').disabled = false;
+      return;
+    }
+    state.carId = data.carId; state.mySeats = data.mySeats; state.car = data.car;
+    state.matched = false; state.done = false;
+    enterMatchingScreen(data.fare);
+  } catch(e){
+    document.getElementById('partyError').innerHTML = `<div class="error-box">Couldn't reach the server. Try again.</div>`;
+    document.getElementById('partyContinue').disabled = false;
+  }
 }
 
-async function goOffline(){
-  try{ await fetch(API_BASE + '/api/captain/offline', { method:'POST', headers: authHeaders() }); } catch(e){}
-  stopLocationSharing();
-  state.car = null;
-  document.getElementById('statusToggle').classList.remove('online');
-  document.getElementById('statusText').textContent='Offline';
-  goTo('screen-setup');
-}
-
-/* ---------- live location sharing (GPS) ---------- */
-let geoWatchId = null;
-let latestPosition = null;
-let locationSendTimer = null;
-
-function startLocationSharing(){
-  if (!('geolocation' in navigator)) return; // no alert — location sharing is supplementary, not required to work
-  stopLocationSharing();
-  geoWatchId = navigator.geolocation.watchPosition(
-    (pos) => { latestPosition = { lat: pos.coords.latitude, lng: pos.coords.longitude }; },
-    (err) => { console.warn('Location error:', err.message); },
-    { enableHighAccuracy: true, maximumAge: 5000 }
-  );
-  // Send at most once every 5s even if the browser reports faster than that —
-  // seat/dispatch matching doesn't need sub-5-second precision, and this
-  // keeps the API call volume reasonable for a captain driving all day.
-  locationSendTimer = setInterval(() => {
-    if (!latestPosition || !token) return;
-    fetch(API_BASE + '/api/captain/location', {
-      method:'POST', headers: authHeaders(true),
-      body: JSON.stringify(latestPosition),
-    }).catch(()=>{});
-  }, 5000);
-}
-function stopLocationSharing(){
-  if (geoWatchId !== null){ navigator.geolocation.clearWatch(geoWatchId); geoWatchId = null; }
-  clearInterval(locationSendTimer); locationSendTimer = null;
-  latestPosition = null;
-}
-
-function enterOffer(car){
-  state.car = null;
-  state.offerCar = car;
-  document.getElementById('offerTitle').textContent = VEHICLES[car.vehicleType].name;
-  document.getElementById('offerRoute').textContent = routeLabel(car.direction, true);
-  const filled = car.front.filter(s=>s!==null).length + car.rows.reduce((n,r)=>n+r.seats.filter(s=>s!==null).length,0);
-  const total = totalSeats(car.vehicleType);
-  document.getElementById('offerSummary').textContent = `${filled} of ${total} seats filled — the rest would ride empty if you accept now.`;
-  renderSeatMap('offerSeatMap', car);
-  goTo('screen-offer');
-}
-async function respondOffer(action){
-  if (!state.offerCar) return;
+async function bookPrivate(vehicleType){
+  state.vehicleType = vehicleType; state.mode='private'; state.mySeats='ALL';
   try{
-    const res = await fetch(`${API_BASE}/api/captain/offer/${state.offerCar.id}/${action}`, { method:'POST', headers: authHeaders() });
+    const res = await fetch(API_BASE + '/api/book-private', {
+      method:'POST', headers: authHeaders(true),
+      body: JSON.stringify({ vehicleType, direction: state.direction }),
+    });
     const data = await res.json();
-    if (!res.ok){ alert(data.error || 'Could not respond to offer.'); goTo('screen-idle'); return; }
-    state.offerCar = null;
-    if (action==='accept') enterForming(data.car); else goTo('screen-idle');
+    if (!res.ok){ alert(data.error || 'Could not book the whole car.'); return; }
+    state.carId = data.carId; state.car = data.car;
+    state.matched=false; state.done=false;
+    enterMatchingScreen(data.fare);
   } catch(e){ alert("Couldn't reach the server."); }
 }
 
-function enterForming(car){
-  state.car = car;
-  goTo('screen-forming');
-  document.getElementById('carTitle').firstChild.textContent = VEHICLES[car.vehicleType].name + ' ';
-  document.getElementById('privateBadge').style.display = car.mode==='private' ? 'inline-block' : 'none';
-  document.getElementById('carRoute').textContent = routeLabel(car.direction, true);
-  document.getElementById('startEarlyBtn').style.display = car.mode==='private' ? 'none' : 'block';
-  renderSeatMap('seatMap', car);
-  updateForming(car);
+let waitTimer = null;
+function enterMatchingScreen(fare){
+  goTo('screen-matching');
+  document.getElementById('carTitle').firstChild.textContent = VEHICLES[state.vehicleType].name + ' ';
+  document.getElementById('privateBadge').style.display = state.mode==='private' ? 'inline-block' : 'none';
+  document.getElementById('carRoute').textContent = state.direction==='A_TO_B' ? 'A → B' : 'B → A';
+  document.getElementById('matchFare').textContent = fare + ' SAR';
+  document.getElementById('waitPanel').style.display = 'none';
+  renderSeatMap('seatMap', state.car, true);
+  updateMatchProgress(state.car);
+  clearTimeout(waitTimer);
+  if (state.mode==='shared'){ waitTimer = setTimeout(showWaitOptions, 15000); }
 }
-function enterTripFromCar(car){
-  state.car = car;
-  document.getElementById('tripCarTitle').textContent = VEHICLES[car.vehicleType].name + (car.mode==='private' ? ' · Private' : '');
-  document.getElementById('tripCarRoute').textContent = routeLabel(car.direction, true);
-  renderSeatMap('tripSeatMap', car);
-  const filled = car.front.filter(s=>s!==null).length + car.rows.reduce((n,r)=>n+r.seats.filter(s=>s!==null).length,0);
-  const fare = car.mode==='private' ? VEHICLES[car.vehicleType].fullPrice : filled * VEHICLES[car.vehicleType].price;
-  document.getElementById('tripFare').textContent = fare + ' SAR';
-  goTo('screen-trip');
+function enterMatchingScreenFromCar(car){
+  state.car = car; state.vehicleType = car.vehicleType; state.direction = car.direction; state.mode = car.mode;
+  const fare = car.mode==='private' ? VEHICLES[car.vehicleType].fullPrice : (state.party.men+state.party.women)*VEHICLES[car.vehicleType].price;
+  enterMatchingScreen(fare || VEHICLES[car.vehicleType].price);
 }
 
-function renderSeatMap(elId, car){
+function showWaitOptions(){
+  if (state.matched || state.done || !document.getElementById('screen-matching').classList.contains('active')) return;
+  document.getElementById('waitPanel').style.display = 'block';
+  fetch(`${API_BASE}/api/vacancies?direction=${state.direction}`).then(r=>r.json()).then(vac=>{
+    const wrap = document.getElementById('suggestionChips');
+    wrap.innerHTML = '';
+    Object.entries(vac).forEach(([vtype, info])=>{
+      if (vtype===state.vehicleType || !info) return;
+      if (info.openMen < state.party.men || info.openWomen < state.party.women) return;
+      const div = document.createElement('div');
+      div.className = 'suggest-chip';
+      div.innerHTML = `
+        <div><div class="sc-name">${VEHICLES[vtype].name}</div><div class="sc-meta">${info.openTotal} seat${info.openTotal===1?'':'s'} open right now</div></div>
+        <div class="sc-go">Switch →</div>`;
+      div.onclick = () => switchVehicle(vtype);
+      wrap.appendChild(div);
+    });
+    if (!wrap.children.length){
+      wrap.innerHTML = '<p class="section-note" style="margin:0 0 10px;">No open seats in other vehicles for your group size right now.</p>';
+    }
+  }).catch(()=>{});
+}
+
+async function releaseCurrentSeats(){
+  if (state.mode==='shared' && state.carId && Array.isArray(state.mySeats) && state.mySeats.length){
+    try{
+      await fetch(`${API_BASE}/api/book/${state.carId}/cancel`, {
+        method:'POST', headers: authHeaders(true),
+        body: JSON.stringify({ seats: state.mySeats }),
+      });
+    } catch(e){}
+  }
+}
+async function switchVehicle(vtype){ await releaseCurrentSeats(); state.vehicleType = vtype; requestSeats(); }
+async function switchToPrivate(){ await releaseCurrentSeats(); bookPrivate(state.vehicleType); }
+async function leaveMatching(){ clearTimeout(waitTimer); await releaseCurrentSeats(); goTo(state.mode==='private' ? 'screen-pick' : 'screen-party'); }
+
+function isMySeat(type, ri, si){
+  if (state.mySeats==='ALL') return true;
+  if (!Array.isArray(state.mySeats)) return false;
+  return state.mySeats.some(s => s.type===type && (type==='front' ? s.idx===si : (s.row===ri && s.idx===si)));
+}
+function renderSeatMap(elId, car, showYou){
   const cfg = VEHICLES[car.vehicleType];
   const rowLabel = VEHICLE_ROWLABEL[car.vehicleType];
   const el = document.getElementById(elId);
   let html = '<div class="driver-row">';
-  car.front.forEach(f=>{
+  car.front.forEach((f, fi)=>{
+    const you = showYou && isMySeat('front', null, fi);
     const cls = f ? f : '';
-    const icon = f==='private' ? '★' : (f ? '♂' : '—');
-    html += `<div class="driver-unit"><div class="seat ${cls}">${icon}</div><div class="dnote">${cfg.frontSeats>1?'driver row':'driver'}</div></div>`;
+    html += `<div class="driver-unit"><div class="seat ${cls} ${you?'you':''}">${f ? (f==='private'?'★':'♂') : '—'}</div><div class="dnote">${cfg.frontSeats>1?'driver row':'driver'}</div></div>`;
   });
   html += '</div>';
   car.rows.forEach((r, ri)=>{
     const label = r.gender==='private' ? 'Private' : (r.gender ? (r.gender==='men'?'Men':'Women') : 'open');
     html += `<div class="row-tag">${rowLabel}${cfg.rows>1?' '+(ri+1):''} · ${label}</div>`;
     html += '<div class="seat-row">';
-    r.seats.forEach(s=>{
+    r.seats.forEach((s, si)=>{
+      const you = showYou && isMySeat('row', ri, si);
+      const cls = s ? s : '';
       const icon = s==='private' ? '★' : (s ? (s==='men'?'♂':'♀') : '·');
-      html += `<div class="seat ${s?s:''}">${icon}</div>`;
+      html += `<div class="seat ${cls} ${you?'you':''}">${icon}</div>`;
     });
     html += '</div>';
   });
   el.innerHTML = html;
 }
 
-function updateForming(car){
+function updateMatchProgress(car){
   const total = totalSeats(car.vehicleType);
   const filled = car.front.filter(s=>s!==null).length + car.rows.reduce((n,r)=>n+r.seats.filter(s=>s!==null).length,0);
   const left = total-filled;
-  document.getElementById('fillBar').style.width = Math.round((filled/total)*100)+'%';
-  document.getElementById('formingStatus').textContent = car.mode==='private'
-    ? 'Exclusive booking — car reserved for one group, ready to go!'
-    : (left===0 ? 'Car is full — ready to go!' : `${filled}/${total} seats filled · waiting for ${left} more`);
-  document.getElementById('startEarlyBtn').textContent = `Start trip now (${filled}/${total} filled)`;
-  document.getElementById('startFullBtn').disabled = left!==0;
+  document.getElementById('fillBar').style.width = Math.round((filled/total)*100) + '%';
+  document.getElementById('matchStatus').textContent = state.mode==='private'
+    ? 'This car is reserved just for your group — matching a captain…'
+    : (left===0 ? 'Car is full — matching you with a captain…' : `${left} seat${left===1?'':'s'} left to fill`);
 }
 
-async function startTrip(){
-  try{
-    const res = await fetch(API_BASE + '/api/captain/start-trip', { method:'POST', headers: authHeaders() });
-    const data = await res.json();
-    if (!res.ok){ alert(data.error||'Could not start trip.'); return; }
-    enterTripFromCar(data.car);
-  } catch(e){ alert("Couldn't reach the server."); }
+function handleCarUpdate(car){
+  state.car = car;
+  if (!state.done && document.getElementById('screen-matching').classList.contains('active')){
+    renderSeatMap('seatMap', car, true);
+    updateMatchProgress(car);
+  }
+  if (car.status === 'ready' && !state.matched && !state.done){
+    state.matched = true;
+    enterTripScreen(car);
+  } else if (car.status === 'in_trip' && state.matched && !state.done){
+    document.getElementById('tripStage').textContent = 'On the way to ' + (state.direction==='A_TO_B' ? 'Point B' : 'Point A');
+    renderSeatMap('tripSeatMap', car, true);
+  } else if (car.status === 'completed' && !state.done){
+    state.done = true;
+    enterDoneScreen(car);
+  } else if (state.matched && !state.done && document.getElementById('screen-trip').classList.contains('active')){
+    renderSeatMap('tripSeatMap', car, true);
+  }
 }
 
-async function completeTrip(){
-  try{
-    const res = await fetch(API_BASE + '/api/captain/complete-trip', { method:'POST', headers: authHeaders() });
-    const data = await res.json();
-    if (!res.ok){ alert(data.error||'Could not complete trip.'); return; }
-    state.captain = data.captain; state.car = data.car || null;
-    updateEarningsUI();
-    document.getElementById('doneFare').textContent = data.trip.fare + ' SAR';
-    renderHistory();
-    goTo('screen-done');
-  } catch(e){ alert("Couldn't reach the server."); }
+function enterTripScreen(car){
+  clearTimeout(waitTimer);
+  document.getElementById('capName').textContent = car.captainName || 'Your captain';
+  document.getElementById('capMeta').textContent = `${VEHICLES[car.vehicleType].name} · Plate ${car.captainPlate || '—'}`;
+  document.getElementById('capInitials').textContent = (car.captainName||'C A').split(' ').map(w=>w[0]).join('').slice(0,2);
+  const seatLabel = state.mode==='private'
+    ? `Whole car · ${totalSeats(car.vehicleType)} seats`
+    : `${Array.isArray(state.mySeats)?state.mySeats.length:1} seat${(Array.isArray(state.mySeats)&&state.mySeats.length===1)?'':'s'} · ${state.party.men} men, ${state.party.women} women`;
+  document.getElementById('seatCode').textContent = seatLabel;
+  const fare = state.mode==='private' ? VEHICLES[car.vehicleType].fullPrice : (state.party.men+state.party.women)*VEHICLES[car.vehicleType].price;
+  document.getElementById('tripFare').textContent = fare + ' SAR';
+  document.getElementById('tripStage').textContent = car.status==='in_trip' ? ('On the way to ' + (state.direction==='A_TO_B' ? 'Point B' : 'Point A')) : 'Captain is on the way';
+  renderSeatMap('tripSeatMap', car, true);
+  goTo('screen-trip');
 }
 
-function continueToNext(){ if (state.car) enterForming(state.car); else goTo('screen-idle'); }
+function enterDoneScreen(car){
+  const fare = state.mode==='private' ? VEHICLES[car.vehicleType].fullPrice : (state.party.men+state.party.women)*VEHICLES[car.vehicleType].price;
+  document.getElementById('doneFare').textContent = fare + ' SAR';
+  // refresh profile trip history in the background
+  fetch(API_BASE + '/api/customer/me', { headers: authHeaders() }).then(r=>r.ok?r.json():null).then(d=>{ if(d){ state.customer = d.customer; } }).catch(()=>{});
+  goTo('screen-done');
+}
 
-function renderHistory(){
-  const wrap = document.getElementById('historyList');
-  if (state.history.length===0){ wrap.innerHTML = '<div style="font-size:13px;color:var(--ink-soft);">No trips yet.</div>'; return; }
-  wrap.innerHTML = state.history.slice(0,20).map(h => `
-    <div class="history-row">
-      <div><div>${VEHICLES[h.vehicleType].name}${h.mode==='private'?' (private)':''} · ${routeLabel(h.direction, true)}</div><div class="hr-meta">${h.seats} seat${h.seats===1?'':'s'} filled</div></div>
-      <div class="hr-fare">${h.fare} SAR</div>
-    </div>
-  `).join('');
+function resetToHome(){
+  state.vehicleType=null; state.carId=null; state.mySeats=[]; state.car=null;
+  state.party = {men:0, women:0}; state.mode='shared'; state.matched=false; state.done=false;
+  renderVehicleList();
+  goTo('screen-pick');
 }
 
 /* ---------- init: resume session if we have a token ---------- */
 if (token){
-  fetch(API_BASE + '/api/captain/me', { headers: authHeaders() }).then(r=>r.ok?r.json():Promise.reject()).then(data=>{
-    state.captain = data.captain;
-    afterAuth(data.car || (data.offer ? null : null));
-    if (!data.car && data.offer) enterOffer(data.offer);
-  }).catch(()=>{ token = null; localStorage.removeItem('rahlah_captain_token'); goTo('screen-auth'); });
+  fetch(API_BASE + '/api/customer/me', { headers: authHeaders() }).then(r=>r.ok?r.json():Promise.reject()).then(data=>{
+    state.customer = data.customer;
+    afterAuth(data.car);
+  }).catch(()=>{ token = null; localStorage.removeItem('rahlah_customer_token'); goTo('screen-auth'); });
 } else {
   goTo('screen-auth');
 }
