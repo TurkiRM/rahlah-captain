@@ -226,7 +226,7 @@
 // Leave blank for local dev (falls back to http://localhost:3000) or if this
 // file is served by the same server as the API. If deployed separately, set
 // this to your backend's URL, e.g. 'https://rahlah-backend.onrender.com'.
-const CONFIGURED_API_BASE = '';
+const CONFIGURED_API_BASE = 'https://rahlah-backend.onrender.com';
 // ===============================================================
 const API_BASE = CONFIGURED_API_BASE || (location.hostname === 'localhost' ? 'http://localhost:3000' : '');
 const WS_BASE = API_BASE ? API_BASE.replace(/^http/, 'ws') : `${location.protocol==='https:'?'wss:':'ws:'}//${location.host}`;
