@@ -191,10 +191,10 @@
         <div><div class="profile-name" id="profName">—</div><div class="profile-meta" id="profMeta">—</div></div>
         <button class="logout-link" onclick="logout()">Log out</button>
       </div>
-      <div class="section-title">Vehicle type</div>
-      <div id="vehicleList"></div>
       <div class="section-title">Route you're driving</div>
       <select class="route-dropdown" id="directionSelect" onchange="onDirectionChange()"></select>
+      <div class="section-title">Vehicle type</div>
+      <div id="vehicleList"></div>
       <div class="notify-row" id="notifyRow">
         <div><div class="notify-title">🔔 Notify me when off duty</div><div class="notify-sub">Get a push alert if a full car or booking needs a captain while you're away.</div></div>
         <button class="notify-toggle" id="notifyToggle" onclick="toggleNotifications()">Enable</button>
@@ -291,6 +291,7 @@ const WS_BASE = API_BASE ? API_BASE.replace(/^http/, 'ws') : `${location.protoco
 const VEHICLE_ICONS = { sedan:'🚗', family:'🚙', minibus:'🚐' };
 const VEHICLE_ROWLABEL = { sedan:'Back row', family:'Row', minibus:'Row' };
 let VEHICLES = {};
+let FARE = {}; // vehicleType -> {seat, full}, refetched whenever the driving route changes
 let POINTS = { A: { full: 'Point A', short: 'A' }, B: { full: 'Point B', short: 'B' } }; // overwritten by /api/points on load
 let DIRECTIONS = { A_TO_B: {from:'A',to:'B'}, B_TO_A: {from:'B',to:'A'} }; // overwritten by /api/directions on load
 function routeLabel(direction, useShort){
@@ -361,9 +362,17 @@ function renderDirectionOptions(){
   if (!ids.includes(state.direction)) state.direction = ids[0];
   document.getElementById('directionSelect').innerHTML = ids.map(dir =>
     `<option value="${dir}" ${dir===state.direction?'selected':''}>${routeLabel(dir)}</option>`).join('');
+  refreshFare();
 }
 function onDirectionChange(){
   state.direction = document.getElementById('directionSelect').value;
+  refreshFare();
+}
+async function refreshFare(){
+  try{
+    FARE = await fetch(`${API_BASE}/api/fare?direction=${state.direction}`).then(r=>r.json());
+  } catch(e){ FARE = {}; }
+  if (document.getElementById('screen-setup').classList.contains('active')) renderVehicleList();
 }
 
 function totalSeats(vtype){ const c=VEHICLES[vtype]; return c.frontSeats + c.rows*3; }
@@ -537,6 +546,7 @@ function renderVehicleList(){
   const wrap = document.getElementById('vehicleList');
   wrap.innerHTML='';
   Object.entries(VEHICLES).forEach(([key,cfg])=>{
+    const fare = FARE[key];
     const div = document.createElement('div');
     div.className = 'option-card' + (state.vehicleType===key ? ' selected':'');
     div.onclick = ()=>{ state.vehicleType=key; renderVehicleList(); checkGoOnline(); };
@@ -546,7 +556,7 @@ function renderVehicleList(){
         <div class="v-name">${cfg.name}</div>
         <div class="v-seats">${totalSeats(key)} seats · ${cfg.frontSeats} front (men) + ${cfg.rows} row${cfg.rows>1?'s':''} of 3</div>
       </div>
-      <div class="v-price">${cfg.price} SAR/seat<span>or ${cfg.fullPrice} full car</span></div>
+      <div class="v-price">${fare ? fare.seat + ' SAR/seat' : '—'}<span>${fare ? 'or ' + fare.full + ' full car' : ''}</span></div>
     `;
     wrap.appendChild(div);
   });
@@ -641,13 +651,16 @@ function enterForming(car){
   renderSeatMap('seatMap', car);
   updateForming(car);
 }
-function enterTripFromCar(car){
+async function enterTripFromCar(car){
   state.car = car;
   document.getElementById('tripCarTitle').textContent = VEHICLES[car.vehicleType].name + (car.mode==='private' ? ' · Private' : '');
   document.getElementById('tripCarRoute').textContent = routeLabel(car.direction, true);
   renderSeatMap('tripSeatMap', car);
   const filled = car.front.filter(s=>s!==null).length + car.rows.reduce((n,r)=>n+r.seats.filter(s=>s!==null).length,0);
-  const fare = car.mode==='private' ? VEHICLES[car.vehicleType].fullPrice : filled * VEHICLES[car.vehicleType].price;
+  let fareData = {};
+  try{ fareData = await fetch(`${API_BASE}/api/fare?direction=${car.direction}`).then(r=>r.json()); } catch(e){}
+  const f = fareData[car.vehicleType];
+  const fare = car.mode==='private' ? (f ? f.full : 0) : filled * (f ? f.seat : 0);
   document.getElementById('tripFare').textContent = fare + ' SAR';
   goTo('screen-trip');
 }
