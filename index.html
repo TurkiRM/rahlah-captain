@@ -54,6 +54,15 @@
   .doc-status{font-size:11px;padding:3px 9px;border-radius:20px;font-family:'Space Grotesk';font-weight:600;}
   .doc-status.missing{background:#FBE7E2;color:#8A3420;}
   .doc-status.uploaded{background:#DCEEE1;color:#1B6B3A;}
+  .vehicle-row{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px;cursor:pointer;}
+  .vehicle-row-top{display:flex;justify-content:space-between;align-items:center;}
+  .vehicle-row-name{font-family:'Space Grotesk';font-weight:600;font-size:14px;}
+  .vehicle-row-meta{font-size:11.5px;color:var(--ink-soft);margin-top:2px;}
+  .vstatus{font-size:11px;padding:3px 9px;border-radius:20px;font-family:'Space Grotesk';font-weight:600;white-space:nowrap;}
+  .vstatus.active{background:#DCEEE1;color:#1B6B3A;}
+  .vstatus.pending_review{background:#EFE6C8;color:#7A5E12;}
+  .vstatus.documents_needed{background:#E7E4DA;color:#6B6555;}
+  .vstatus.rejected{background:#FBE7E2;color:#8A3420;}
   .doc-row input[type=file]{width:100%;font-size:12px;}
   .error-box{background:#FBE7E2;border:1px solid #E3A392;color:#8A3420;font-size:13px;border-radius:12px;padding:12px 14px;margin-bottom:14px;}
 
@@ -138,23 +147,45 @@
       <div id="authError"></div>
       <div class="field" id="fieldName" style="display:none;"><label>Your name</label><input id="regName" placeholder="e.g. Mohammed A." /></div>
       <div class="field"><label>Phone number</label><input id="authPhone" placeholder="05xxxxxxxx" /></div>
+      <div class="field" id="fieldVehicleType" style="display:none;"><label>Vehicle type</label><select id="regVehicleType"></select></div>
       <div class="field" id="fieldPlate" style="display:none;"><label>Vehicle plate</label><input id="regPlate" placeholder="e.g. 4211 KLM" /></div>
       <div class="field"><label>Password</label><input id="authPassword" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter') submitAuth()" /></div>
       <button class="cta gold" id="authSubmitBtn" onclick="submitAuth()">Log in</button>
       <div class="switch-link" id="authSwitch">New here? <a onclick="toggleAuthMode()">Create a captain account</a></div>
     </section>
 
-    <!-- DOCUMENTS (required before going online; also used to re-upload after rejection) -->
-    <section class="screen" id="screen-documents">
+    <!-- VEHICLES (manage all registered vehicles, add new ones) -->
+    <section class="screen" id="screen-vehicles">
       <div class="profile-row">
-        <div><div class="profile-name" id="docsProfName">—</div><div class="profile-meta">Document verification</div></div>
+        <div><div class="profile-name" id="vehiclesProfName">—</div><div class="profile-meta">Your vehicles</div></div>
+        <button class="logout-link" onclick="logout()">Log out</button>
+      </div>
+      <div id="vehiclesList"></div>
+      <div class="section-title" style="margin-top:26px;">Add another vehicle</div>
+      <p class="section-note">Your license and photo are already on file — only this vehicle's own
+        registration, insurance, and inspection are needed.</p>
+      <div class="field"><label>Vehicle type</label><select id="newVehicleType"></select></div>
+      <div class="field"><label>Plate</label><input id="newVehiclePlate" placeholder="e.g. 4211 KLM" /></div>
+      <div id="addVehicleError"></div>
+      <button class="cta gold" onclick="addVehicle()">Add vehicle</button>
+    </section>
+
+    <!-- DOCUMENTS (scoped to one vehicle; required before that vehicle can go online) -->
+    <section class="screen" id="screen-documents">
+      <button class="nav-back" onclick="goTo('screen-vehicles'); renderVehiclesList();">← Back to vehicles</button>
+      <div class="profile-row">
+        <div><div class="profile-name" id="docsProfName">—</div><div class="profile-meta" id="docsVehicleLabel">Document verification</div></div>
         <button class="logout-link" onclick="logout()">Log out</button>
       </div>
       <div id="rejectionBanner" style="display:none;" class="error-box"></div>
-      <div class="section-title">Upload your documents</div>
-      <p class="section-note">All five are required before you can go online. A supervisor reviews them
-        before your account is activated — this usually doesn't take long.</p>
-      <div id="docFieldsWrap"></div>
+      <div class="section-title">Vehicle documents</div>
+      <p class="section-note">Registration, insurance, and inspection for this specific vehicle.</p>
+      <div id="vehicleDocFieldsWrap"></div>
+      <div id="personalDocsSection">
+        <div class="section-title" style="margin-top:22px;">Your documents</div>
+        <p class="section-note">Your license and a photo of yourself — needed once, covers every vehicle you add.</p>
+        <div id="personalDocFieldsWrap"></div>
+      </div>
       <div id="docsError"></div>
       <button class="cta gold" id="docsSubmitBtn" onclick="submitDocuments()">Save documents</button>
     </section>
@@ -167,9 +198,9 @@
         <div class="cd-title" style="margin-bottom:8px;">Documents under review</div>
         <p style="font-size:13px;color:var(--ink-soft);line-height:1.5;margin:0 0 16px;">
           A supervisor is reviewing your documents. You'll be able to go online as soon as
-          your account is approved.
+          a vehicle is approved.
         </p>
-        <button class="cta ghost" onclick="goTo('screen-documents'); renderDocFields();">Review my uploads</button>
+        <button class="cta ghost" onclick="goTo('screen-vehicles'); renderVehiclesList();">View my vehicles</button>
       </div>
     </section>
 
@@ -185,16 +216,18 @@
       </div>
     </section>
 
-    <!-- SETUP (choose vehicle/direction, go online) -->
+    <!-- SETUP (choose vehicle/current point, go online) -->
     <section class="screen" id="screen-setup">
       <div class="profile-row">
         <div><div class="profile-name" id="profName">—</div><div class="profile-meta" id="profMeta">—</div></div>
         <button class="logout-link" onclick="logout()">Log out</button>
       </div>
-      <div class="section-title">Route you're driving</div>
-      <select class="route-dropdown" id="directionSelect" onchange="onDirectionChange()"></select>
-      <div class="section-title">Vehicle type</div>
+      <div class="section-title">Vehicle</div>
       <div id="vehicleList"></div>
+      <button class="cta ghost" onclick="goTo('screen-vehicles'); renderVehiclesList();" style="margin-bottom:18px;">Manage vehicles</button>
+      <div class="section-title">Where are you right now?</div>
+      <p class="section-note">You'll be offered any trip departing from this point — not just one fixed route.</p>
+      <select class="route-dropdown" id="pointSelect" onchange="onPointChange()"></select>
       <div class="notify-row" id="notifyRow">
         <div><div class="notify-title">🔔 Notify me when off duty</div><div class="notify-sub">Get a push alert if a full car or booking needs a captain while you're away.</div></div>
         <button class="notify-toggle" id="notifyToggle" onclick="toggleNotifications()">Enable</button>
@@ -292,9 +325,9 @@ const WS_BASE = API_BASE ? API_BASE.replace(/^http/, 'ws') : `${location.protoco
 const VEHICLE_ICONS = { sedan:'🚗', family:'🚙', minibus:'🚐' };
 const VEHICLE_ROWLABEL = { sedan:'Back row', family:'Row', minibus:'Row' };
 let VEHICLES = {};
-let FARE = {}; // vehicleType -> {seat, full}, refetched whenever the driving route changes
 let POINTS = { A: { full: 'Point A', short: 'A' }, B: { full: 'Point B', short: 'B' } }; // overwritten by /api/points on load
 let DIRECTIONS = { A_TO_B: {from:'A',to:'B'}, B_TO_A: {from:'B',to:'A'} }; // overwritten by /api/directions on load
+let pointsLoaded = false;
 function routeLabel(direction, useShort){
   const d = DIRECTIONS[direction];
   if (!d) return direction;
@@ -305,7 +338,7 @@ function routeLabel(direction, useShort){
 let authMode = 'login';
 let token = localStorage.getItem('rahlah_captain_token') || null;
 let state = {
-  vehicleType:null, direction:'A_TO_B', captain:null, car:null,
+  vehicleType:null, captain:null, car:null,
   history:[], totalEarnings:0, notifyOn: localStorage.getItem('rahlah_notify_on')==='1',
 };
 
@@ -348,33 +381,33 @@ setInterval(() => {
   }).catch(()=>{});
 }, 4000);
 
-fetch(API_BASE + '/api/vehicles').then(r=>r.json()).then(v=>{ VEHICLES = v; renderVehicleList(); }).catch(()=>{
+fetch(API_BASE + '/api/vehicles').then(r=>r.json()).then(v=>{
+  VEHICLES = v;
+  document.getElementById('regVehicleType').innerHTML = vehicleTypeOptionsHTML();
+  renderVehicleList();
+}).catch(()=>{
   document.getElementById('vehicleList').innerHTML = '<div style="font-size:13px;color:#8A3420;">Can\'t reach the server. Is it running?</div>';
 });
 fetch(API_BASE + '/api/points').then(r=>r.json()).then(p=>{
   POINTS = p;
   return fetch(API_BASE + '/api/directions').then(r=>r.json()).then(d=>{ DIRECTIONS = d; });
 }).then(()=>{
-  renderDirectionOptions();
+  pointsLoaded = true;
+  renderPointOptions();
 }).catch(()=>{});
 
-function renderDirectionOptions(){
-  const ids = Object.keys(DIRECTIONS);
-  if (!ids.includes(state.direction)) state.direction = ids[0];
-  document.getElementById('directionSelect').innerHTML = ids.map(dir =>
-    `<option value="${dir}" ${dir===state.direction?'selected':''}>${routeLabel(dir)}</option>`).join('');
-  refreshFare();
+// A captain picks WHERE they are, not a fixed route — they're offered any trip
+// departing from that point. Defaults to wherever their last completed trip
+// left them, if known.
+function renderPointOptions(){
+  if (!pointsLoaded) return; // POINTS hasn't loaded yet — the fetch chain re-renders once it does
+  const ids = Object.keys(POINTS);
+  if (!ids.length) return;
+  const current = (state.captain && state.captain.currentPoint && ids.includes(state.captain.currentPoint)) ? state.captain.currentPoint : ids[0];
+  document.getElementById('pointSelect').innerHTML = ids.map(id =>
+    `<option value="${id}" ${id===current?'selected':''}>${POINTS[id].full}</option>`).join('');
 }
-function onDirectionChange(){
-  state.direction = document.getElementById('directionSelect').value;
-  refreshFare();
-}
-async function refreshFare(){
-  try{
-    FARE = await fetch(`${API_BASE}/api/fare?direction=${state.direction}`).then(r=>r.json());
-  } catch(e){ FARE = {}; }
-  if (document.getElementById('screen-setup').classList.contains('active')) renderVehicleList();
-}
+function onPointChange(){ /* value read directly from the select at go-online time */ }
 
 function totalSeats(vtype){ const c=VEHICLES[vtype]; return c.frontSeats + c.rows*3; }
 function goTo(id){
@@ -388,6 +421,7 @@ function toggleAuthMode(){
   document.getElementById('authTitle').textContent = authMode==='login' ? 'Log in' : 'Create a captain account';
   document.getElementById('authSubmitBtn').textContent = authMode==='login' ? 'Log in' : 'Create account';
   document.getElementById('fieldName').style.display = authMode==='register' ? 'block' : 'none';
+  document.getElementById('fieldVehicleType').style.display = authMode==='register' ? 'block' : 'none';
   document.getElementById('fieldPlate').style.display = authMode==='register' ? 'block' : 'none';
   document.getElementById('authSwitch').innerHTML = authMode==='login'
     ? `New here? <a onclick="toggleAuthMode()">Create a captain account</a>`
@@ -399,7 +433,12 @@ async function submitAuth(){
   const password = document.getElementById('authPassword').value;
   document.getElementById('authError').innerHTML = '';
   if (!phone || !password){ document.getElementById('authError').innerHTML = '<div class="error-box">Enter phone and password.</div>'; return; }
-  const body = authMode==='login' ? { phone, password } : { phone, password, name: document.getElementById('regName').value.trim(), plate: document.getElementById('regPlate').value.trim() };
+  const body = authMode==='login' ? { phone, password } : {
+    phone, password,
+    name: document.getElementById('regName').value.trim(),
+    vehicleType: document.getElementById('regVehicleType').value,
+    plate: document.getElementById('regPlate').value.trim(),
+  };
   if (authMode==='register' && (!body.name || !body.plate)){ document.getElementById('authError').innerHTML = '<div class="error-box">Name and plate are required.</div>'; return; }
   try{
     const res = await fetch(`${API_BASE}/api/captain/${authMode}`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
@@ -414,15 +453,14 @@ async function submitAuth(){
 function afterAuth(car){
   updateProfileUI();
   updateEarningsUI();
-  const status = state.captain.accountStatus;
-  if (status === 'documents_needed' || status === 'rejected'){
-    goTo('screen-documents');
-    renderDocFields();
-    return;
+  if (state.captain.suspended){ goTo('screen-suspended'); return; }
+  const vehicleEntries = Object.entries(state.captain.vehicles || {});
+  const hasActive = vehicleEntries.some(([,v]) => v.accountStatus === 'active');
+  if (!hasActive){
+    const needsAction = vehicleEntries.some(([,v]) => v.accountStatus === 'documents_needed' || v.accountStatus === 'rejected');
+    if (needsAction || vehicleEntries.length === 0){ goTo('screen-vehicles'); renderVehiclesList(); return; }
+    goTo('screen-pending-review'); return; // everything's pending_review, nothing to act on yet
   }
-  if (status === 'pending_review'){ goTo('screen-pending-review'); return; }
-  if (status === 'suspended'){ goTo('screen-suspended'); return; }
-  // status === 'active'
   if (car){
     if (car.status === 'in_trip') enterTripFromCar(car);
     else enterForming(car);
@@ -430,32 +468,83 @@ function afterAuth(car){
   } else {
     document.getElementById('statusToggle').classList.toggle('online', state.captain.status==='online');
     document.getElementById('statusText').textContent = state.captain.status==='online' ? 'Online' : 'Offline';
-    if (state.captain.status==='online'){ goTo('screen-idle'); startLocationSharing(); } else goTo('screen-setup');
+    if (state.captain.status==='online'){ goTo('screen-idle'); startLocationSharing(); } else { goTo('screen-setup'); renderVehicleList(); renderPointOptions(); }
   }
   if (state.notifyOn) setNotifyUI(true);
 }
 
+/* ---------- vehicles ---------- */
+function vehicleTypeOptionsHTML(){
+  return Object.entries(VEHICLES).map(([key,cfg]) => `<option value="${key}">${cfg.name}</option>`).join('');
+}
+function renderVehiclesList(){
+  document.getElementById('vehiclesProfName').textContent = state.captain.name;
+  const wrap = document.getElementById('vehiclesList');
+  const entries = Object.entries(state.captain.vehicles || {});
+  wrap.innerHTML = entries.length ? entries.map(([vtype, v]) => `
+    <div class="vehicle-row" onclick="openVehicleDocuments('${vtype}')">
+      <div class="vehicle-row-top">
+        <div><div class="vehicle-row-name">${VEHICLES[vtype] ? VEHICLES[vtype].name : vtype}</div><div class="vehicle-row-meta">Plate ${v.plate}</div></div>
+        <span class="vstatus ${v.accountStatus}">${v.accountStatus.replace('_',' ')}</span>
+      </div>
+    </div>
+  `).join('') : `<p class="section-note">No vehicles yet.</p>`;
+  // vehicle types not already added, for the "add a vehicle" picker
+  const existing = new Set(entries.map(([vtype]) => vtype));
+  const available = Object.keys(VEHICLES).filter(v => !existing.has(v));
+  const sel = document.getElementById('newVehicleType');
+  sel.innerHTML = available.length ? available.map(v => `<option value="${v}">${VEHICLES[v].name}</option>`).join('') : '<option value="">All vehicle types already added</option>';
+  document.getElementById('addVehicleError').innerHTML = '';
+}
+async function addVehicle(){
+  const vehicleType = document.getElementById('newVehicleType').value;
+  const plate = document.getElementById('newVehiclePlate').value.trim();
+  document.getElementById('addVehicleError').innerHTML = '';
+  if (!vehicleType){ document.getElementById('addVehicleError').innerHTML = '<div class="error-box">Choose a vehicle type.</div>'; return; }
+  if (!plate){ document.getElementById('addVehicleError').innerHTML = '<div class="error-box">Enter the plate.</div>'; return; }
+  try{
+    const res = await fetch(API_BASE + '/api/captain/vehicles', { method:'POST', headers: authHeaders(true), body: JSON.stringify({ vehicleType, plate }) });
+    const data = await res.json();
+    if (!res.ok){ document.getElementById('addVehicleError').innerHTML = `<div class="error-box">${data.error}</div>`; return; }
+    state.captain = data.captain;
+    document.getElementById('newVehiclePlate').value = '';
+    openVehicleDocuments(vehicleType);
+  } catch(e){ document.getElementById('addVehicleError').innerHTML = '<div class="error-box">Couldn\'t reach the server.</div>'; }
+}
+let docVehicleType = null;
+function openVehicleDocuments(vehicleType){
+  docVehicleType = vehicleType;
+  goTo('screen-documents');
+  renderDocFields();
+}
+
 /* ---------- documents ---------- */
-const DOC_TYPES = [
-  { key:'license', label:"Driver's license" },
+const VEHICLE_DOC_TYPES = [
   { key:'vehicleRegistration', label:'Vehicle registration' },
   { key:'insurance', label:'Insurance' },
   { key:'inspection', label:'Periodic inspection certificate' },
+];
+const PERSONAL_DOC_TYPES = [
+  { key:'license', label:"Driver's license" },
   { key:'photo', label:'Photo of yourself' },
 ];
 function renderDocFields(){
   document.getElementById('docsProfName').textContent = state.captain.name;
-  const reason = state.captain.rejectionReason;
+  const vehicle = state.captain.vehicles[docVehicleType];
+  if (!vehicle){ goTo('screen-vehicles'); renderVehiclesList(); return; }
+  document.getElementById('docsVehicleLabel').textContent = `${VEHICLES[docVehicleType] ? VEHICLES[docVehicleType].name : docVehicleType} · Plate ${vehicle.plate}`;
+
+  const reason = vehicle.rejectionReason;
   const banner = document.getElementById('rejectionBanner');
-  if (state.captain.accountStatus === 'rejected' && reason){
+  if (vehicle.accountStatus === 'rejected' && reason){
     banner.style.display = 'block';
     banner.textContent = `Not approved: ${reason} — please re-upload the affected document(s) below.`;
   } else {
     banner.style.display = 'none';
   }
-  const wrap = document.getElementById('docFieldsWrap');
-  wrap.innerHTML = DOC_TYPES.map(d => {
-    const uploaded = !!(state.captain.documents && state.captain.documents[d.key]);
+
+  document.getElementById('vehicleDocFieldsWrap').innerHTML = VEHICLE_DOC_TYPES.map(d => {
+    const uploaded = !!(vehicle.documents && vehicle.documents[d.key]);
     return `
       <div class="doc-row">
         <div class="doc-row-top">
@@ -465,11 +554,32 @@ function renderDocFields(){
         <input type="file" id="doc-${d.key}" accept="image/*,application/pdf" />
       </div>`;
   }).join('');
+
+  // Personal docs (license/photo) only need uploading once ever — hide the
+  // whole section once they've been approved on any previous vehicle.
+  const personalSection = document.getElementById('personalDocsSection');
+  if (state.captain.personalDocumentsApproved){
+    personalSection.style.display = 'none';
+  } else {
+    personalSection.style.display = 'block';
+    document.getElementById('personalDocFieldsWrap').innerHTML = PERSONAL_DOC_TYPES.map(d => {
+      const uploaded = !!(state.captain.personalDocuments && state.captain.personalDocuments[d.key]);
+      return `
+        <div class="doc-row">
+          <div class="doc-row-top">
+            <div class="doc-name">${d.label}</div>
+            <div class="doc-status ${uploaded?'uploaded':'missing'}">${uploaded?'Uploaded ✓':'Missing'}</div>
+          </div>
+          <input type="file" id="doc-${d.key}" accept="image/*,application/pdf" />
+        </div>`;
+    }).join('');
+  }
 }
 async function submitDocuments(){
   const formData = new FormData();
+  formData.append('vehicleType', docVehicleType);
   let anySelected = false;
-  DOC_TYPES.forEach(d => {
+  [...VEHICLE_DOC_TYPES, ...PERSONAL_DOC_TYPES].forEach(d => {
     const input = document.getElementById('doc-'+d.key);
     if (input && input.files && input.files[0]){ formData.append(d.key, input.files[0]); anySelected = true; }
   });
@@ -501,7 +611,8 @@ function logout(){
 }
 function updateProfileUI(){
   document.getElementById('profName').textContent = state.captain.name;
-  document.getElementById('profMeta').textContent = state.captain.phone + ' · ' + state.captain.plate;
+  const vehicleCount = Object.keys(state.captain.vehicles || {}).length;
+  document.getElementById('profMeta').textContent = `${state.captain.phone} · ${vehicleCount} vehicle${vehicleCount===1?'':'s'}`;
 }
 function updateEarningsUI(){
   document.getElementById('todayEarnings').textContent = state.captain.earnings + ' SAR';
@@ -543,12 +654,19 @@ function setNotifyUI(on){
   btn.classList.toggle('on', on);
 }
 
-/* ---------- vehicle/direction/online ---------- */
+/* ---------- vehicle/point/online ---------- */
 function renderVehicleList(){
+  if (!Object.keys(VEHICLES).length) return; // VEHICLES hasn't loaded yet — the fetch chain re-renders once it does
   const wrap = document.getElementById('vehicleList');
   wrap.innerHTML='';
-  Object.entries(VEHICLES).forEach(([key,cfg])=>{
-    const fare = FARE[key];
+  const active = Object.entries((state.captain && state.captain.vehicles) || {}).filter(([,v]) => v.accountStatus === 'active');
+  if (!active.length){
+    wrap.innerHTML = `<p class="section-note">No approved vehicles yet — add one under "Manage vehicles".</p>`;
+    return;
+  }
+  if (!active.some(([key]) => key === state.vehicleType)) state.vehicleType = active[0][0];
+  active.forEach(([key]) => {
+    const cfg = VEHICLES[key];
     const div = document.createElement('div');
     div.className = 'option-card' + (state.vehicleType===key ? ' selected':'');
     div.onclick = ()=>{ state.vehicleType=key; renderVehicleList(); checkGoOnline(); };
@@ -558,18 +676,19 @@ function renderVehicleList(){
         <div class="v-name">${cfg.name}</div>
         <div class="v-seats">${totalSeats(key)} seats · ${cfg.frontSeats} front (men) + ${cfg.rows} row${cfg.rows>1?'s':''} of 3</div>
       </div>
-      <div class="v-price">${fare ? fare.seat + ' SAR/seat' : '—'}<span>${fare ? 'or ' + fare.full + ' full car' : ''}</span></div>
     `;
     wrap.appendChild(div);
   });
+  checkGoOnline();
 }
 function checkGoOnline(){ document.getElementById('goOnlineBtn').disabled = !state.vehicleType; }
 
 async function goOnline(){
+  const currentPoint = document.getElementById('pointSelect').value;
   try{
     const res = await fetch(API_BASE + '/api/captain/online', {
       method:'POST', headers: authHeaders(true),
-      body: JSON.stringify({ vehicleType: state.vehicleType, direction: state.direction }),
+      body: JSON.stringify({ vehicleType: state.vehicleType, currentPoint }),
     });
     const data = await res.json();
     if (!res.ok){ alert(data.error || 'Could not go online.'); return; }
