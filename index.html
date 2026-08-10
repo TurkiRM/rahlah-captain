@@ -262,8 +262,9 @@
         <div class="section-title" style="margin-top:10px;">Trip closed out</div>
       </div>
       <div class="fare-box"><div><div class="fl">You earned this trip</div></div><div class="fv" id="doneFare">4 SAR</div></div>
-      <button class="cta" onclick="continueToNext()">Accept next car</button>
-      <button class="cta ghost" onclick="goOffline()">Go offline</button>
+      <p class="section-note" style="text-align:center;margin-top:-6px;">Continuing automatically in a moment…</p>
+      <button class="cta" onclick="continueToNext()">Accept next car now</button>
+      <button class="cta ghost" onclick="goOffline()">Go offline instead</button>
       <div class="section-title" style="margin-top:26px;">Recent trips</div>
       <div id="historyList"></div>
     </section>
@@ -492,6 +493,7 @@ async function submitDocuments(){
   }
 }
 function logout(){
+  clearTimeout(doneScreenTimer);
   stopLocationSharing();
   token = null; state.captain = null; state.car = null;
   localStorage.removeItem('rahlah_captain_token');
@@ -581,6 +583,7 @@ async function goOnline(){
 }
 
 async function goOffline(){
+  clearTimeout(doneScreenTimer);
   try{ await fetch(API_BASE + '/api/captain/offline', { method:'POST', headers: authHeaders() }); } catch(e){}
   stopLocationSharing();
   state.car = null;
@@ -710,6 +713,7 @@ async function startTrip(){
   } catch(e){ alert("Couldn't reach the server."); }
 }
 
+let doneScreenTimer = null;
 async function completeTrip(){
   try{
     const res = await fetch(API_BASE + '/api/captain/complete-trip', { method:'POST', headers: authHeaders() });
@@ -720,10 +724,19 @@ async function completeTrip(){
     document.getElementById('doneFare').textContent = data.trip.fare + ' SAR';
     renderHistory();
     goTo('screen-done');
+    // "Accept next car" isn't really a decision — the server already worked out
+    // what's next (state.car) before this screen even shows. The button exists
+    // so a captain CAN skip the wait, not because they have to tap it every
+    // single time just to keep working.
+    clearTimeout(doneScreenTimer);
+    doneScreenTimer = setTimeout(() => { continueToNext(); }, 3000);
   } catch(e){ alert("Couldn't reach the server."); }
 }
 
-function continueToNext(){ if (state.car) enterForming(state.car); else goTo('screen-idle'); }
+function continueToNext(){
+  clearTimeout(doneScreenTimer);
+  if (state.car) enterForming(state.car); else goTo('screen-idle');
+}
 
 let previousScreen = null;
 function currentActiveScreenId(){
@@ -731,6 +744,7 @@ function currentActiveScreenId(){
   return el ? el.id : 'screen-idle';
 }
 async function openHistory(){
+  clearTimeout(doneScreenTimer);
   const active = currentActiveScreenId();
   if (active !== 'screen-history') previousScreen = active;
   goTo('screen-history');
