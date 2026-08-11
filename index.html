@@ -364,6 +364,15 @@ function connectWS(){
       } else if (state.car && car.id === state.car.id && document.getElementById('screen-forming').classList.contains('active')){
         state.car = car; renderSeatMap('seatMap', car); updateForming(car);
       }
+    } else if (state.car && car.id === state.car.id && document.getElementById('screen-forming').classList.contains('active')){
+      // This was my car and I've just been unassigned from it — e.g. every
+      // passenger cancelled before the trip started. Go idle right away
+      // instead of sitting on a stale screen until the next poll notices.
+      // If I've also been handed a replacement car, that arrives as a
+      // separate broadcast right after this one and the branch above picks
+      // it up correctly once state.car is cleared here.
+      state.car = null;
+      goTo('screen-idle');
     }
   };
 }
@@ -377,6 +386,11 @@ setInterval(() => {
       else { state.car = data.car; renderSeatMap('seatMap', data.car); updateForming(data.car); }
     } else if (!data.car && data.offer && !document.getElementById('screen-offer').classList.contains('active')){
       enterOffer(data.offer);
+    } else if (!data.car && !data.offer && state.car && document.getElementById('screen-forming').classList.contains('active')){
+      // I had a car, the server now says I don't and there's nothing else
+      // waiting for me either — someone cancelled out from under me. Go idle.
+      state.car = null;
+      goTo('screen-idle');
     }
   }).catch(()=>{});
 }, 4000);
