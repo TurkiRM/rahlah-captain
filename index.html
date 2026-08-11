@@ -55,6 +55,15 @@
   .doc-status.missing{background:#FBE7E2;color:#8A3420;}
   .doc-status.uploaded{background:#DCEEE1;color:#1B6B3A;}
   .vehicle-row{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px;cursor:pointer;}
+  .passenger-row{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px;}
+  .passenger-info .p-name{font-family:'Space Grotesk';font-weight:600;font-size:13.5px;}
+  .passenger-info .p-meta{font-size:11.5px;color:var(--ink-soft);margin-top:1px;}
+  .call-btn-small{width:36px;height:36px;border-radius:50%;background:var(--brand-tint,#EFEAD9);display:flex;align-items:center;justify-content:center;font-size:15px;text-decoration:none;flex-shrink:0;}
+  .rating-card{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px;}
+  .rating-card .p-name{font-family:'Space Grotesk';font-weight:600;font-size:13.5px;margin-bottom:6px;}
+  .star-row-small{font-size:26px;margin:6px 0;user-select:none;}
+  .star-row-small .star{cursor:pointer;color:#D8D2C2;padding:0 2px;}
+  .star-row-small .star.filled{color:#E8B84B;}
   .vehicle-row-top{display:flex;justify-content:space-between;align-items:center;}
   .vehicle-row-name{font-family:'Space Grotesk';font-weight:600;font-size:14px;}
   .vehicle-row-meta{font-size:11.5px;color:var(--ink-soft);margin-top:2px;}
@@ -288,6 +297,7 @@
         <div id="seatMap"></div>
         <div class="progress-track"><div class="progress-fill" id="fillBar" style="width:0%"></div></div>
       </div>
+      <div id="formingPassengerList"></div>
       <button class="cta ghost" id="startEarlyBtn" onclick="startTrip()">Start trip now (partial car)</button>
       <button class="cta" id="startFullBtn" disabled onclick="startTrip()">Start trip — car full</button>
     </section>
@@ -298,6 +308,7 @@
         <div class="cd-head"><div class="cd-title" id="tripCarTitle">Sedan</div><div class="cd-sub" id="tripCarRoute">A → B</div></div>
         <div id="tripSeatMap"></div>
       </div>
+      <div id="tripPassengerList"></div>
       <div class="fare-box"><div><div class="fl">Fare to collect this trip</div></div><div class="fv" id="tripFare">4 SAR</div></div>
       <button class="cta" onclick="completeTrip()">Mark trip complete</button>
     </section>
@@ -311,6 +322,7 @@
       <p class="section-note" style="text-align:center;margin-top:-6px;">Continuing automatically in a moment…</p>
       <button class="cta" onclick="continueToNext()">Accept next car now</button>
       <button class="cta ghost" onclick="goOffline()">Go offline instead</button>
+      <div id="ratingPromptsList"></div>
       <div class="section-title" style="margin-top:26px;">Recent trips</div>
       <div id="historyList"></div>
     </section>
@@ -375,7 +387,7 @@ function connectWS(){
       if (!state.car || document.getElementById('screen-idle').classList.contains('active') || document.getElementById('screen-offer').classList.contains('active')){
         enterForming(car);
       } else if (state.car && car.id === state.car.id && document.getElementById('screen-forming').classList.contains('active')){
-        state.car = car; renderSeatMap('seatMap', car); updateForming(car);
+        state.car = car; renderSeatMap('seatMap', car); renderPassengerList('formingPassengerList', car); updateForming(car);
       }
     } else if (state.car && car.id === state.car.id && document.getElementById('screen-forming').classList.contains('active')){
       // This was my car and I've just been unassigned from it — e.g. every
@@ -396,7 +408,7 @@ setInterval(() => {
     if (!data) return;
     if (data.car && (!state.car || state.car.id !== data.car.id || document.getElementById('screen-forming').classList.contains('active'))){
       if (!state.car || state.car.id !== data.car.id){ enterForming(data.car); }
-      else { state.car = data.car; renderSeatMap('seatMap', data.car); updateForming(data.car); }
+      else { state.car = data.car; renderSeatMap('seatMap', data.car); renderPassengerList('formingPassengerList', data.car); updateForming(data.car); }
     } else if (!data.car && data.offer && !document.getElementById('screen-offer').classList.contains('active')){
       enterOffer(data.offer);
     } else if (!data.car && !data.offer && state.car && document.getElementById('screen-forming').classList.contains('active')){
@@ -821,6 +833,20 @@ async function respondOffer(action){
   } catch(e){ alert("Couldn't reach the server."); }
 }
 
+function renderPassengerList(elId, car){
+  const wrap = document.getElementById(elId);
+  if (!wrap) return;
+  const bookings = car.bookings || [];
+  if (!bookings.length){ wrap.innerHTML = ''; return; }
+  wrap.innerHTML = `<div class="section-title" style="margin-top:16px;font-size:14px;">Passengers</div>` + bookings.map(b => {
+    const ratingText = b.ratingCount ? `★ ${b.ratingAvg} (${b.ratingCount})` : 'No ratings yet';
+    return `
+    <div class="passenger-row">
+      <div class="passenger-info"><div class="p-name">${b.name || 'Passenger'}</div><div class="p-meta">${ratingText}</div></div>
+      ${b.phone ? `<a class="call-btn-small" href="tel:${b.phone}" title="Call passenger">📞</a>` : ''}
+    </div>`;
+  }).join('');
+}
 function enterForming(car){
   state.car = car;
   goTo('screen-forming');
@@ -829,6 +855,7 @@ function enterForming(car){
   document.getElementById('carRoute').textContent = routeLabel(car.direction, true);
   document.getElementById('startEarlyBtn').style.display = car.mode==='private' ? 'none' : 'block';
   renderSeatMap('seatMap', car);
+  renderPassengerList('formingPassengerList', car);
   updateForming(car);
 }
 async function enterTripFromCar(car){
@@ -836,6 +863,7 @@ async function enterTripFromCar(car){
   document.getElementById('tripCarTitle').textContent = VEHICLES[car.vehicleType].name + (car.mode==='private' ? ' · Private' : '');
   document.getElementById('tripCarRoute').textContent = routeLabel(car.direction, true);
   renderSeatMap('tripSeatMap', car);
+  renderPassengerList('tripPassengerList', car);
   const filled = car.front.filter(s=>s!==null).length + car.rows.reduce((n,r)=>n+r.seats.filter(s=>s!==null).length,0);
   let fareData = {};
   try{ fareData = await fetch(`${API_BASE}/api/fare?direction=${car.direction}`).then(r=>r.json()); } catch(e){}
@@ -891,6 +919,44 @@ async function startTrip(){
 }
 
 let doneScreenTimer = null;
+let passengerStars = [];
+function renderRatingPrompts(tripId, passengers){
+  const wrap = document.getElementById('ratingPromptsList');
+  if (!passengers || !passengers.length){ wrap.innerHTML = ''; passengerStars = []; return; }
+  passengerStars = passengers.map(()=>0);
+  wrap.innerHTML = `<div class="section-title" style="margin-top:20px;">Rate your passengers</div>` + passengers.map((p, i) => `
+    <div class="rating-card" data-passenger="${p.customerId}">
+      <div class="p-name">${p.name}</div>
+      <div class="star-row-small" id="pstars-${i}">
+        ${[1,2,3,4,5].map(n=>`<span class="star" data-star="${n}" onclick="setPassengerStars(${i},${n})">☆</span>`).join('')}
+      </div>
+      <button class="cta ghost" style="margin:6px 0 0;padding:8px;" onclick="submitPassengerRating(${i}, '${tripId}', '${p.customerId}')">Submit rating</button>
+    </div>
+  `).join('');
+}
+function setPassengerStars(i, n){
+  passengerStars[i] = n;
+  clearTimeout(doneScreenTimer); // actively rating — don't auto-advance out from under them
+  document.querySelectorAll(`#pstars-${i} .star`).forEach(el => {
+    const s = parseInt(el.dataset.star, 10);
+    el.textContent = s <= n ? '★' : '☆';
+    el.classList.toggle('filled', s <= n);
+  });
+}
+async function submitPassengerRating(i, tripId, customerId){
+  const stars = passengerStars[i];
+  if (!stars){ alert('Tap a star first.'); return; }
+  try{
+    const res = await fetch(API_BASE + '/api/captain/rate-customer', {
+      method:'POST', headers: authHeaders(true),
+      body: JSON.stringify({ carId: tripId, customerId, stars }),
+    });
+    const data = await res.json();
+    if (!res.ok){ alert(data.error || 'Could not submit rating.'); return; }
+    const card = document.querySelector(`.rating-card[data-passenger="${customerId}"]`);
+    if (card) card.style.display = 'none';
+  } catch(e){ alert("Couldn't reach the server."); }
+}
 async function completeTrip(){
   try{
     const res = await fetch(API_BASE + '/api/captain/complete-trip', { method:'POST', headers: authHeaders() });
@@ -899,14 +965,17 @@ async function completeTrip(){
     state.captain = data.captain; state.car = data.car || null;
     updateEarningsUI();
     document.getElementById('doneFare').textContent = data.trip.fare + ' SAR';
+    renderRatingPrompts(data.trip.id, data.trip.passengers);
     renderHistory();
     goTo('screen-done');
     // "Accept next car" isn't really a decision — the server already worked out
     // what's next (state.car) before this screen even shows. The button exists
     // so a captain CAN skip the wait, not because they have to tap it every
-    // single time just to keep working.
+    // single time just to keep working. Give a longer window when there are
+    // passengers to rate, since that's a real task, not just a summary to glance at.
     clearTimeout(doneScreenTimer);
-    doneScreenTimer = setTimeout(() => { continueToNext(); }, 3000);
+    const delay = (data.trip.passengers && data.trip.passengers.length) ? 15000 : 3000;
+    doneScreenTimer = setTimeout(() => { continueToNext(); }, delay);
   } catch(e){ alert("Couldn't reach the server."); }
 }
 
