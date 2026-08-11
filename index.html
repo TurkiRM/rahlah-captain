@@ -152,6 +152,7 @@
       <div class="field"><label>Password</label><input id="authPassword" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter') submitAuth()" /></div>
       <button class="cta gold" id="authSubmitBtn" onclick="submitAuth()">Log in</button>
       <div class="switch-link" id="authSwitch">New here? <a onclick="toggleAuthMode()">Create a captain account</a></div>
+      <p class="section-note" style="text-align:center;margin-top:16px;">Forgot your password? Contact your supervisor to have it reset.</p>
     </section>
 
     <!-- VEHICLES (manage all registered vehicles, add new ones) -->
@@ -168,6 +169,18 @@
       <div class="field"><label>Plate</label><input id="newVehiclePlate" placeholder="e.g. 4211 KLM" /></div>
       <div id="addVehicleError"></div>
       <button class="cta gold" onclick="addVehicle()">Add vehicle</button>
+
+      <div class="section-title" style="margin-top:26px;">Edit profile</div>
+      <div class="field"><label>Name</label><input id="editName" placeholder="Your name" /></div>
+      <div class="field"><label>Phone number</label><input id="editPhone" placeholder="05xxxxxxxx" /></div>
+      <div id="editProfileError"></div>
+      <button class="cta ghost" onclick="saveProfile()">Save changes</button>
+
+      <div class="section-title" style="margin-top:26px;">Change password</div>
+      <div class="field"><label>Current password</label><input id="currentPassword" type="password" placeholder="••••••••" /></div>
+      <div class="field"><label>New password</label><input id="newPassword" type="password" placeholder="••••••••" /></div>
+      <div id="changePasswordError"></div>
+      <button class="cta ghost" onclick="changePassword()">Update password</button>
     </section>
 
     <!-- DOCUMENTS (scoped to one vehicle; required before that vehicle can go online) -->
@@ -493,6 +506,8 @@ function vehicleTypeOptionsHTML(){
 }
 function renderVehiclesList(){
   document.getElementById('vehiclesProfName').textContent = state.captain.name;
+  document.getElementById('editName').value = state.captain.name;
+  document.getElementById('editPhone').value = state.captain.phone;
   const wrap = document.getElementById('vehiclesList');
   const entries = Object.entries(state.captain.vehicles || {});
   wrap.innerHTML = entries.length ? entries.map(([vtype, v]) => `
@@ -509,6 +524,35 @@ function renderVehiclesList(){
   const sel = document.getElementById('newVehicleType');
   sel.innerHTML = available.length ? available.map(v => `<option value="${v}">${VEHICLES[v].name}</option>`).join('') : '<option value="">All vehicle types already added</option>';
   document.getElementById('addVehicleError').innerHTML = '';
+}
+async function saveProfile(){
+  const name = document.getElementById('editName').value.trim();
+  const phone = document.getElementById('editPhone').value.trim();
+  document.getElementById('editProfileError').innerHTML = '';
+  if (!name || !phone){ document.getElementById('editProfileError').innerHTML = '<div class="error-box">Name and phone can\'t be empty.</div>'; return; }
+  try{
+    const res = await fetch(API_BASE + '/api/captain/profile', { method:'POST', headers: authHeaders(true), body: JSON.stringify({ name, phone }) });
+    const data = await res.json();
+    if (!res.ok){ document.getElementById('editProfileError').innerHTML = `<div class="error-box">${data.error}</div>`; return; }
+    state.captain = data.captain;
+    updateProfileUI();
+    renderVehiclesList();
+    alert('Profile updated.');
+  } catch(e){ document.getElementById('editProfileError').innerHTML = '<div class="error-box">Couldn\'t reach the server.</div>'; }
+}
+async function changePassword(){
+  const currentPassword = document.getElementById('currentPassword').value;
+  const newPassword = document.getElementById('newPassword').value;
+  document.getElementById('changePasswordError').innerHTML = '';
+  if (!currentPassword || !newPassword){ document.getElementById('changePasswordError').innerHTML = '<div class="error-box">Enter both your current and new password.</div>'; return; }
+  try{
+    const res = await fetch(API_BASE + '/api/captain/change-password', { method:'POST', headers: authHeaders(true), body: JSON.stringify({ currentPassword, newPassword }) });
+    const data = await res.json();
+    if (!res.ok){ document.getElementById('changePasswordError').innerHTML = `<div class="error-box">${data.error}</div>`; return; }
+    document.getElementById('currentPassword').value = '';
+    document.getElementById('newPassword').value = '';
+    alert('Password updated.');
+  } catch(e){ document.getElementById('changePasswordError').innerHTML = '<div class="error-box">Couldn\'t reach the server.</div>'; }
 }
 async function addVehicle(){
   const vehicleType = document.getElementById('newVehicleType').value;
