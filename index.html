@@ -139,6 +139,7 @@
     <div class="brand-row">
       <div class="brand">Rahlah <small>Captain</small></div>
       <div style="display:flex;align-items:center;gap:10px;">
+        <a class="icon-btn" id="helpIcon" href="#" target="_blank" rel="noopener" title="Contact support on WhatsApp" style="display:none;text-decoration:none;">🆘</a>
         <div class="icon-btn" id="historyIcon" onclick="openHistory()" title="Trip history">🕐</div>
         <div class="status-toggle" id="statusToggle"><span class="dot"></span><span id="statusText">Offline</span></div>
       </div>
@@ -434,6 +435,11 @@ fetch(API_BASE + '/api/points').then(r=>r.json()).then(p=>{
 }).then(()=>{
   pointsLoaded = true;
   renderPointOptions();
+}).catch(()=>{});
+fetch(API_BASE + '/api/settings').then(r=>r.json()).then(s=>{
+  const helpLink = whatsappLink(s.supportWhatsApp);
+  const helpIcon = document.getElementById('helpIcon');
+  if (helpLink){ helpIcon.href = helpLink; helpIcon.style.display = 'flex'; }
 }).catch(()=>{});
 
 // A captain picks WHERE they are, not a fixed route — they're offered any trip
