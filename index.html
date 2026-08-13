@@ -6,6 +6,7 @@
 <title>Rahlah — Captain</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 <style>
   :root{
     --bg:#F2ECDC; --ink:#1C2620; --ink-soft:#5B6259; --panel:#FFFDF6;
@@ -128,6 +129,7 @@
   .history-row:last-child{border-bottom:none;}
   .hr-meta{color:var(--ink-soft);font-size:11px;margin-top:2px;}
   .hr-fare{font-family:'IBM Plex Mono';font-weight:600;color:var(--brand-deep);}
+  .route-view-btn{background:none;border:1.5px solid var(--line);border-radius:10px;padding:5px 8px;font-size:14px;cursor:pointer;}
   .nav-back{background:none;border:none;color:var(--ink-soft);font-size:13px;margin-bottom:14px;cursor:pointer;display:flex;align-items:center;gap:4px;padding:0;}
 </style>
 </head>
@@ -344,9 +346,17 @@
       <div id="historyListFull"></div>
     </section>
 
+    <section class="screen" id="screen-route-view">
+      <button class="nav-back" onclick="returnFromRouteView()">← Back</button>
+      <div class="section-title">Route driven</div>
+      <p id="routeViewStatus" style="font-size:13px;color:var(--ink-soft);"></p>
+      <div id="routeViewMap" style="height:340px;border-radius:var(--radius);overflow:hidden;margin-top:6px;"></div>
+    </section>
+
   </main>
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
 // ===== EDIT THIS BEFORE DEPLOYING AS ITS OWN STATIC SITE =====
 // Leave blank for local dev (falls back to http://localhost:3000) or if this
@@ -1046,10 +1056,51 @@ function renderHistory(targetId){
         <div>${VEHICLES[h.vehicleType].name}${h.mode==='private'?' (private)':''} · ${routeLabel(h.direction, true)}</div>
         <div class="hr-meta">${h.seats} seat${h.seats===1?'':'s'} filled${names ? ' · ' + names : ''}</div>
       </div>
-      <div class="hr-fare">${h.fare} SAR</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="hr-fare">${h.fare} SAR</div>
+        <button class="route-view-btn" onclick="viewTripRoute('${h.id}')" title="View driven route">🗺️</button>
+      </div>
     </div>
   `;}).join('');
 }
+let routeViewMap = null;
+async function viewTripRoute(carId){
+  const active = currentActiveScreenId();
+  if (active !== 'screen-route-view') routeReturnScreen = active;
+  goTo('screen-route-view');
+  document.getElementById('routeViewStatus').textContent = 'Loading route…';
+  try{
+    const data = await fetch(`${API_BASE}/api/captain/trip/${carId}/track`, { headers: authHeaders() }).then(r=>r.json());
+    renderTripRouteMap(data.track || []);
+  } catch(e){
+    document.getElementById('routeViewStatus').textContent = "Couldn't load the route.";
+  }
+}
+function renderTripRouteMap(track){
+  const statusEl = document.getElementById('routeViewStatus');
+  if (!track.length){
+    statusEl.textContent = 'No route was recorded for this trip.';
+    statusEl.style.display = 'block';
+    document.getElementById('routeViewMap').style.display = 'none';
+    return;
+  }
+  statusEl.style.display = 'none';
+  document.getElementById('routeViewMap').style.display = 'block';
+  if (routeViewMap){ routeViewMap.remove(); routeViewMap = null; }
+  routeViewMap = L.map('routeViewMap', { zoomControl: true, attributionControl: true });
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19,
+  }).addTo(routeViewMap);
+  const latlngs = track.map(p => [p.lat, p.lng]);
+  L.polyline(latlngs, { color: '#1B6B3A', weight: 4, opacity: 0.85 }).addTo(routeViewMap);
+  L.circleMarker(latlngs[0], { radius: 7, color: '#1B6B3A', fillColor: '#1B6B3A', fillOpacity: 1 }).addTo(routeViewMap).bindPopup('Trip started');
+  L.circleMarker(latlngs[latlngs.length-1], { radius: 7, color: '#8A3420', fillColor: '#8A3420', fillOpacity: 1 }).addTo(routeViewMap).bindPopup('Trip ended');
+  routeViewMap.fitBounds(L.latLngBounds(latlngs), { padding: [30, 30] });
+  setTimeout(() => routeViewMap && routeViewMap.invalidateSize(), 200);
+}
+let routeReturnScreen = 'screen-history';
+function returnFromRouteView(){ goTo(routeReturnScreen || 'screen-history'); }
 
 /* ---------- init: resume session if we have a token ---------- */
 if (token){
