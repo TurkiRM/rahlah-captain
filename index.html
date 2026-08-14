@@ -1069,12 +1069,22 @@ async function viewTripRoute(carId){
   if (active !== 'screen-route-view') routeReturnScreen = active;
   goTo('screen-route-view');
   document.getElementById('routeViewStatus').textContent = 'Loading route…';
+  let res;
   try{
-    const data = await fetch(`${API_BASE}/api/captain/trip/${carId}/track`, { headers: authHeaders() }).then(r=>r.json());
-    renderTripRouteMap(data.track || []);
+    res = await fetch(`${API_BASE}/api/captain/trip/${carId}/track`, { headers: authHeaders() });
   } catch(e){
-    document.getElementById('routeViewStatus').textContent = "Couldn't load the route.";
+    document.getElementById('routeViewStatus').textContent = "Couldn't reach the server at all — check your internet connection.";
+    return;
   }
+  let data;
+  try{
+    data = await res.json();
+  } catch(e){
+    document.getElementById('routeViewStatus').textContent = `The server responded unexpectedly (status ${res.status}). This usually means the backend hasn't been redeployed with this feature yet.`;
+    return;
+  }
+  if (!res.ok){ document.getElementById('routeViewStatus').textContent = data.error || 'Could not load this route.'; return; }
+  renderTripRouteMap(data.track || []);
 }
 function renderTripRouteMap(track){
   const statusEl = document.getElementById('routeViewStatus');
