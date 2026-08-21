@@ -793,19 +793,31 @@ function renderPayoutHistory(){
 async function requestPayout(){
   const btn = document.getElementById('requestPayoutBtn');
   btn.disabled = true; // prevent double-submission while the request is in flight
+  let res;
   try{
-    const res = await fetch(API_BASE + '/api/captain/payout-request', { method:'POST', headers: authHeaders() });
-    const data = await res.json();
-    if (!res.ok){ alert(data.error || t('couldNotRequestPayout')); btn.disabled = false; return; }
-    state.captain = data.captain;
-    // Deliberately NOT re-enabling the button here — renderVehiclesList()
-    // below sets its disabled state based on real business rules (balance
-    // and pending-request status), and a request that just succeeded
-    // means those rules now correctly say "disabled". A blanket re-enable
-    // here would silently override that.
-    renderVehiclesList();
-    alert(t('payoutRequestedFor', { amount: data.request.amount }));
-  } catch(e){ alert(t('couldntReachServer')); btn.disabled = false; }
+    res = await fetch(API_BASE + '/api/captain/payout-request', { method:'POST', headers: authHeaders() });
+  } catch(e){
+    alert(t('couldntReachServerCheckConnection'));
+    btn.disabled = false;
+    return;
+  }
+  let data;
+  try{
+    data = await res.json();
+  } catch(e){
+    alert(t('unexpectedResponse', { status: res.status }));
+    btn.disabled = false;
+    return;
+  }
+  if (!res.ok){ alert(data.error || t('couldNotRequestPayout')); btn.disabled = false; return; }
+  state.captain = data.captain;
+  // Deliberately NOT re-enabling the button here — renderVehiclesList()
+  // below sets its disabled state based on real business rules (balance
+  // and pending-request status), and a request that just succeeded
+  // means those rules now correctly say "disabled". A blanket re-enable
+  // here would silently override that.
+  renderVehiclesList();
+  alert(t('payoutRequestedFor', { amount: data.request.amount }));
 }
 function renderVehiclesList(){
   document.getElementById('vehiclesProfName').textContent = state.captain.name;
