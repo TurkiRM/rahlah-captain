@@ -74,6 +74,17 @@
   .vstatus.pending_review{background:#EFE6C8;color:#7A5E12;}
   .vstatus.documents_needed{background:#E7E4DA;color:#6B6555;}
   .vstatus.rejected{background:#FBE7E2;color:#8A3420;}
+  .wallet-card{background:var(--brand-deep);color:#fff;border-radius:var(--radius);padding:18px;margin:16px 0 12px;}
+  .wallet-label{font-size:11px;text-transform:uppercase;letter-spacing:1px;opacity:0.75;}
+  .wallet-amount{font-family:'IBM Plex Mono';font-weight:600;font-size:26px;margin-top:4px;}
+  .wallet-card .section-note{color:rgba(255,255,255,0.75);}
+  .payout-row{display:flex;justify-content:space-between;align-items:center;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px;}
+  .payout-amount{font-family:'IBM Plex Mono';font-weight:600;font-size:14px;color:var(--brand-deep);}
+  .payout-date{font-size:11px;color:var(--ink-soft);margin-top:2px;}
+  .payout-status{font-size:11px;padding:3px 9px;border-radius:20px;font-family:'Space Grotesk';font-weight:600;white-space:nowrap;}
+  .payout-status.pending{background:#EFE6C8;color:#7A5E12;}
+  .payout-status.paid{background:#DCEEE1;color:#1B6B3A;}
+  .payout-status.cancelled{background:#E7E4DA;color:#6B6555;}
   .doc-row input[type=file]{width:100%;font-size:12px;}
   .error-box{background:#FBE7E2;border:1px solid #E3A392;color:#8A3420;font-size:13px;border-radius:12px;padding:12px 14px;margin-bottom:14px;}
 
@@ -186,6 +197,15 @@
         <div><div class="profile-name" id="vehiclesProfName">—</div><div class="profile-meta" data-i18n="yourVehicles">Your vehicles</div></div>
         <button class="logout-link" onclick="logout()" data-i18n="logOut">Log out</button>
       </div>
+
+      <div class="wallet-card">
+        <div class="wallet-label" data-i18n="walletBalance">Wallet balance</div>
+        <div class="wallet-amount" id="walletBalanceAmount">0 SAR</div>
+        <p class="section-note" style="margin:6px 0 12px;" data-i18n="walletFromWalletTripsNote">Only from trips paid by wallet — cash trips are paid to you directly and never appear here.</p>
+        <button class="cta gold" id="requestPayoutBtn" onclick="requestPayout()" style="margin-top:0;" data-i18n="requestPayout">Request payout</button>
+      </div>
+      <div id="payoutHistory"></div>
+
       <div id="vehiclesList"></div>
       <div class="section-title" style="margin-top:26px;" data-i18n="addAnotherVehicle">Add another vehicle</div>
       <p class="section-note" data-i18n="vehicleDocsNote">Your license and photo are already on file — only this vehicle's own
@@ -412,6 +432,17 @@ const STRINGS = {
   forgotPassword: { en:'Forgot your password? Contact your supervisor to have it reset.', ar:'نسيت كلمة المرور؟ تواصل مع المشرف لإعادة تعيينها.' },
   logOut: { en:'Log out', ar:'تسجيل الخروج' },
   yourVehicles: { en:'Your vehicles', ar:'مركباتك' },
+  walletBalance: { en:'Wallet balance', ar:'رصيد المحفظة' },
+  walletFromWalletTripsNote: { en:'Only from trips paid by wallet — cash trips are paid to you directly and never appear here.', ar:'فقط من الرحلات المدفوعة عبر المحفظة — الرحلات النقدية تُدفع لك مباشرة ولا تظهر هنا.' },
+  requestPayout: { en:'Request payout', ar:'طلب سحب الرصيد' },
+  noPayoutsYet: { en:'No payout requests yet.', ar:'لا توجد طلبات سحب بعد.' },
+  payoutStatusPending: { en:'Pending', ar:'قيد الانتظار' },
+  payoutStatusPaid: { en:'Paid', ar:'تم الدفع' },
+  payoutStatusCancelled: { en:'Cancelled', ar:'ملغي' },
+  noBalanceToRequest: { en:'No wallet balance available to request.', ar:'لا يوجد رصيد محفظة متاح للطلب.' },
+  alreadyPendingRequest: { en:'You already have a pending payout request.', ar:'لديك بالفعل طلب سحب قيد الانتظار.' },
+  couldNotRequestPayout: { en:'Could not request payout.', ar:'تعذر طلب السحب.' },
+  payoutRequestedFor: { en:'Payout of {amount} SAR requested — a supervisor will process it soon.', ar:'تم طلب سحب {amount} ر.س — سيقوم المشرف بمعالجته قريبًا.' },
   addAnotherVehicle: { en:'Add another vehicle', ar:'إضافة مركبة أخرى' },
   vehicleDocsNote: { en:"Your license and photo are already on file — only this vehicle's own registration, insurance, and inspection are needed.", ar:'رخصتك وصورتك محفوظتان بالفعل — لا يلزم سوى استمارة هذه المركبة وتأمينها وفحصها الدوري.' },
   plate: { en:'Plate', ar:'اللوحة' },
@@ -746,10 +777,43 @@ function statusLabel(status){
   const map = { active: 'statusActive', pending_review: 'statusPendingReview', documents_needed: 'statusDocumentsNeeded', rejected: 'statusRejected' };
   return t(map[status] || status);
 }
+function fmtPayoutDate(ts){ return new Date(ts).toLocaleDateString([], {month:'short', day:'numeric'}); }
+function renderPayoutHistory(){
+  const wrap = document.getElementById('payoutHistory');
+  const requests = state.captain.payoutRequests || [];
+  if (!requests.length){ wrap.innerHTML = ''; return; }
+  const statusKey = { pending: 'payoutStatusPending', paid: 'payoutStatusPaid', cancelled: 'payoutStatusCancelled' };
+  wrap.innerHTML = requests.slice(0, 10).map(p => `
+    <div class="payout-row">
+      <div><div class="payout-amount">${p.amount} SAR</div><div class="payout-date">${fmtPayoutDate(p.requestedAt)}</div></div>
+      <span class="payout-status ${p.status}">${t(statusKey[p.status] || p.status)}</span>
+    </div>
+  `).join('');
+}
+async function requestPayout(){
+  const btn = document.getElementById('requestPayoutBtn');
+  btn.disabled = true; // prevent double-submission while the request is in flight
+  try{
+    const res = await fetch(API_BASE + '/api/captain/payout-request', { method:'POST', headers: authHeaders() });
+    const data = await res.json();
+    if (!res.ok){ alert(data.error || t('couldNotRequestPayout')); btn.disabled = false; return; }
+    state.captain = data.captain;
+    // Deliberately NOT re-enabling the button here — renderVehiclesList()
+    // below sets its disabled state based on real business rules (balance
+    // and pending-request status), and a request that just succeeded
+    // means those rules now correctly say "disabled". A blanket re-enable
+    // here would silently override that.
+    renderVehiclesList();
+    alert(t('payoutRequestedFor', { amount: data.request.amount }));
+  } catch(e){ alert(t('couldntReachServer')); btn.disabled = false; }
+}
 function renderVehiclesList(){
   document.getElementById('vehiclesProfName').textContent = state.captain.name;
   document.getElementById('editName').value = state.captain.name;
   document.getElementById('editPhone').value = state.captain.phone;
+  document.getElementById('walletBalanceAmount').textContent = (state.captain.walletBalance || 0) + ' SAR';
+  document.getElementById('requestPayoutBtn').disabled = (state.captain.walletBalance || 0) <= 0 || (state.captain.payoutRequests || []).some(p => p.status === 'pending');
+  renderPayoutHistory();
   const wrap = document.getElementById('vehiclesList');
   const entries = Object.entries(state.captain.vehicles || {});
   wrap.innerHTML = entries.length ? entries.map(([vtype, v]) => `
